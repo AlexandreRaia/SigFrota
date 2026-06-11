@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Login — SisGestaoFrota{% endblock %}
+
+{% block content %}
+<style>
+  body { background: linear-gradient(135deg, var(--brand-900) 0%, #0d2035 100%); }
+  .main-wrapper { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; }
+
+  .login-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 2.75rem 2.5rem;
+    width: 100%; max-width: 400px;
+    box-shadow: var(--shadow-lg);
+  }
+  .login-logo {
+    text-align: center; margin-bottom: 2rem;
+  }
+  .login-logo .icon { font-size: 2.75rem; display: block; margin-bottom: .5rem; }
+  .login-logo h1 { font-size: 1.2rem; font-weight: 800; color: var(--gray-900); }
+  .login-logo p  { font-size: .8rem; color: var(--gray-400); margin-top: .2rem; }
+
+  .form-group { margin-bottom: 1.1rem; }
+  .form-group label {
+    display: block; font-size: .8rem; font-weight: 600;
+    color: var(--gray-700); margin-bottom: .35rem;
+  }
+  .form-group input {
+    width: 100%; padding: .6rem .9rem;
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    font-size: .9rem; color: var(--gray-900);
+    transition: border-color var(--transition), box-shadow var(--transition);
+    outline: none;
+  }
+  .form-group input:focus {
+    border-color: var(--brand-500);
+    box-shadow: 0 0 0 3px var(--brand-100);
+  }
+
+  .btn-login {
+    width: 100%; padding: .7rem;
+    background: linear-gradient(135deg, var(--brand-500), var(--brand-600));
+    color: #fff; border: none; border-radius: var(--radius-sm);
+    font-size: .95rem; font-weight: 700; cursor: pointer;
+    margin-top: .5rem;
+    transition: opacity var(--transition), box-shadow var(--transition);
+    box-shadow: 0 4px 12px rgba(37,99,235,.3);
+  }
+  .btn-login:hover { opacity: .92; box-shadow: 0 6px 18px rgba(37,99,235,.4); }
+
+  .error-msg {
+    background: var(--red-50); color: var(--red-600);
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-sm);
+    padding: .65rem .9rem; margin-bottom: 1.1rem;
+    font-size: .83rem; font-weight: 500;
+  }
+</style>
+
+<div class="login-card">
+  <div class="login-logo">
+    <span class="icon">🚍</span>
+    <h1>SisGestaoFrota</h1>
+    <p>Prefeitura Municipal de Santana de Parnaíba</p>
+  </div>
+
+  {% if form.errors %}
+  <div class="error-msg">⚠️ Usuário ou senha inválidos. Tente novamente.</div>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="id_username">Usuário</label>
+      <input type="text" name="username" id="id_username" autofocus required placeholder="seu.usuario">
+    </div>
+    <div class="form-group">
+      <label for="id_password">Senha</label>
+      <input type="password" name="password" id="id_password" required placeholder="••••••••">
+    </div>
+    <button type="submit" class="btn-login">Entrar no Sistema</button>
+  </form>
+</div>
+{% endblock %}

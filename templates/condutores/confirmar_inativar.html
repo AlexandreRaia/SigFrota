@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Inativar {{ condutor.nome }} — Condutores{% endblock %}
+
+{% block content %}
+<div style="max-width:480px;margin:4rem auto">
+  <div style="background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);padding:2rem;box-shadow:var(--shadow-sm);text-align:center">
+    <div style="font-size:2.5rem;margin-bottom:1rem">⚠️</div>
+    <h2 style="font-size:1.1rem;font-weight:700;color:var(--gray-900);margin-bottom:.5rem">Confirmar Inativação</h2>
+    <p style="color:var(--gray-500);font-size:.9rem;margin-bottom:1.5rem">
+      O condutor <strong>{{ condutor.nome }}</strong> ({{ condutor.prontuario }}) será marcado como <strong>INATIVO</strong>.<br>
+      O registro não será excluído e pode ser reativado depois.
+    </p>
+    <div style="display:flex;gap:.75rem;justify-content:center">
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" style="padding:.5rem 1.25rem;background:#dc2626;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer">Confirmar</button>
+      </form>
+      <a href="{% url 'condutores:detalhe' condutor.pk %}" style="padding:.5rem 1.25rem;background:#fff;border:1.5px solid var(--gray-200);border-radius:6px;font-weight:600;color:var(--gray-700)">Cancelar</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

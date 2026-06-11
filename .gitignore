@@ -1,0 +1,38 @@
+# SECRET KEY real — nunca versionar o .env
+.env
+
+# Banco SQLite3 de desenvolvimento
+db.sqlite3
+
+# Bytecode Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtualenv
+.venv/
+venv/
+env/
+
+# Arquivos estáticos coletados
+staticfiles/
+
+# Arquivos de mídia (uploads)
+media/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Arquivos temporários de testes
+.coverage
+htmlcov/
+.pytest_cache/

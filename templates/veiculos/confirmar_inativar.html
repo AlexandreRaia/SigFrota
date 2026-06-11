@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Confirmar — {{ veiculo.placa }}{% endblock %}
+{% block content %}
+<div class="page-header"><div class="page-title">Confirmar Operação</div></div>
+<div style="background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);padding:2rem;max-width:500px;box-shadow:var(--shadow-sm)">
+  <p style="font-size:.95rem;color:var(--gray-700);margin-bottom:1.5rem">
+    {% if veiculo.status == "INATIVO" %}
+      Reativar o veículo <strong>{{ veiculo.placa }}</strong> — {{ veiculo.marca }} {{ veiculo.modelo }}?
+    {% else %}
+      Inativar o veículo <strong>{{ veiculo.placa }}</strong> — {{ veiculo.marca }} {{ veiculo.modelo }}?
+    {% endif %}
+  </p>
+  <form method="post" style="display:flex;gap:.75rem">
+    {% csrf_token %}
+    <button type="submit" class="btn" style="background:{% if veiculo.status == 'INATIVO' %}var(--brand-500);color:#fff{% else %}#fee2e2;color:var(--red-600);border:1.5px solid #fecaca{% endif %};padding:.5rem 1.2rem;border-radius:var(--radius-sm);font-weight:600;cursor:pointer;border:none">
+      {% if veiculo.status == "INATIVO" %}Confirmar Reativação{% else %}Confirmar Inativação{% endif %}
+    </button>
+    <a href="{% url 'veiculos:detalhe' veiculo.pk %}" style="padding:.5rem 1.2rem;border-radius:var(--radius-sm);border:1.5px solid var(--gray-200);font-weight:600;color:var(--gray-700);text-decoration:none">Cancelar</a>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block title %}{% if veiculo %}Editar {{ veiculo.placa }}{% else %}Novo Veículo{% endif %} — SisGestaoFrota{% endblock %}
+
+{% block extra_head %}
+<style>
+  .form-layout { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+  @media(max-width:860px){ .form-layout { grid-template-columns:1fr; } }
+
+  .section-card { background:#fff; border:1px solid var(--gray-200); border-radius:var(--radius); padding:1.5rem; box-shadow:var(--shadow-sm); }
+  .section-title { font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--gray-400); border-bottom:1px solid var(--gray-100); padding-bottom:.5rem; margin-bottom:1.1rem; }
+  .fg { display:flex; flex-direction:column; gap:.3rem; margin-bottom:.85rem; }
+  .fg label { font-size:.8rem; font-weight:600; color:var(--gray-500); }
+  .fg label .req { color:var(--red-600); margin-left:.1rem; }
+  .form-control { padding:.45rem .7rem; border:1.5px solid var(--gray-200); border-radius:var(--radius-sm); font-size:.875rem; color:var(--gray-900); outline:none; width:100%; }
+  .form-control:focus { border-color:var(--brand-500); }
+  select.form-control { cursor:pointer; }
+  .errorlist { list-style:none; color:var(--red-600); font-size:.75rem; margin:.2rem 0 0; }
+
+  .fg-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
+  .fg-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:.75rem; }
+
+  .check-grid { display:grid; grid-template-columns:1fr 1fr; gap:.4rem .75rem; }
+  .check-row { display:flex; align-items:center; gap:.5rem; font-size:.875rem; color:var(--gray-700); }
+  .check-row input[type=checkbox] { width:1rem; height:1rem; cursor:pointer; accent-color:var(--brand-500); }
+
+  .btn { padding:.5rem 1.2rem; border-radius:var(--radius-sm); border:none; cursor:pointer; font-size:.875rem; font-weight:600; transition:var(--transition); display:inline-flex; align-items:center; gap:.4rem; }
+  .btn-primary { background:var(--brand-500); color:#fff; }
+  .btn-primary:hover { background:var(--brand-600); }
+  .btn-outline { background:#fff; color:var(--gray-700); border:1.5px solid var(--gray-200); text-decoration:none; }
+  .btn-outline:hover { border-color:var(--brand-500); color:var(--brand-600); }
+
+  .full-width { grid-column:1/-1; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">🚗 {{ titulo }}</div>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+{% csrf_token %}
+<div class="form-layout">
+
+  <!-- ── Identificação ─────────────────────────────── -->
+  <div class="section-card">
+    <div class="section-title">Identificação</div>
+    <div class="fg-grid-2">
+      <div class="fg"><label>Placa <span class="req">*</span></label>{{ form.placa }}{{ form.placa.errors }}</div>
+      <div class="fg"><label>Nº Patrimônio</label>{{ form.num_patrimonio }}{{ form.num_patrimonio.errors }}</div>
+    </div>
+    <div class="fg"><label>Marca <span class="req">*</span></label>{{ form.marca }}{{ form.marca.errors }}</div>
+    <div class="fg">
+      <label>Modelo <span class="req">*</span></label>
+      {{ form.modelo }}{{ form.modelo.errors }}
+      <span id="modelo-hint" style="font-size:.72rem;color:var(--gray-400);display:none">Selecione a marca primeiro.</span>
+    </div>
+    <div class="fg-grid-2">
+      <div class="fg"><label>Chassi <span class="req">*</span></label>{{ form.chassi }}{{ form.chassi.errors }}</div>
+      <div class="fg"><label>RENAVAM <span class="req">*</span></label>{{ form.renavam }}{{ form.renavam.errors }}</div>
+    </div>
+    <div class="fg-grid-2">
+      <div class="fg"><label>Prefixo</label>{{ form.prefixo }}{{ form.prefixo.errors }}</div>
+    </div>
+  </div>
+
+  <!-- ── Especificações Técnicas ───────────────────── -->
+  <div class="section-card">
+    <div class="section-title">Especificações Técnicas</div>
+    <div class="fg-grid-2">
+      <div class="fg"><label>Tipo <span class="req">*</span></label>{{ form.tipo_veiculo }}{{ form.tipo_veiculo.errors }}</div>
+      <div class="fg"><label>Ano Fabricação <span class="req">*</span></label>{{ form.ano_fabricacao }}{{ form.ano_fabricacao.errors }}</div>
+    </div>
+    <div class="fg-grid-2">
+      <div class="fg"><label>Combustível <span class="req">*</span></label>{{ form.combustivel }}{{ form.combustivel.errors }}</div>
+      <div class="fg"><label>Transmissão</label>{{ form.transmissao }}{{ form.transmissao.errors }}</div>
+    </div>
+    <div class="fg-grid-3">
+      <div class="fg"><label>Cap. Tanque (L) <span class="req">*</span></label>{{ form.cap_tanque }}{{ form.cap_tanque.errors }}</div>
+      <div class="fg"><label>Consumo Ref. (km/L)</label>{{ form.consumo_ref }}{{ form.consumo_ref.errors }}</div>
+      <div class="fg"><label>Cap. Passageiros</label>{{ form.cap_passageiros }}{{ form.cap_passageiros.errors }}</div>
+    </div>
+    <div class="fg-grid-2">
+      <div class="fg"><label>Cor</label>{{ form.cor }}{{ form.cor.errors }}</div>
+      <div class="fg"><label>Dimensão Pneus</label>{{ form.pneu_dim }}{{ form.pneu_dim.errors }}</div>
+    </div>
+    <div class="fg"><label>Motor / Potência</label>{{ form.motor_potencia }}{{ form.motor_potencia.errors }}</div>
+  </div>
+
+  <!-- ── Histórico e Estado ─────────────────────────── -->
+  <div class="section-card">
+    <div class="section-title">Histórico e Estado</div>
+    <div class="fg-grid-2">
+      <div class="fg"><label>KM de Entrada <span class="req">*</span></label>{{ form.km_entrada }}{{ form.km_entrada.errors }}</div>
+      <div class="fg"><label>Último KM</label>{{ form.ultimo_km }}{{ form.ultimo_km.errors }}</div>
+    </div>
+    <div class="fg-grid-2">
+      <div class="fg"><label>Estado de Conservação <span class="req">*</span></label>{{ form.estado_conservacao }}{{ form.estado_conservacao.errors }}</div>
+      <div class="fg"><label>Status <span class="req">*</span></label>{{ form.status }}{{ form.status.errors }}</div>
+    </div>
+  </div>
+
+  <!-- ── Informações Financeiras ───────────────────── -->
+  <div class="section-card">
+    <div class="section-title">Informações Financeiras</div>
+    <div class="fg-grid-2">
+      <div class="fg"><label>Tipo de Frota <span class="req">*</span></label>{{ form.tipo_frota }}{{ form.tipo_frota.errors }}</div>
+      <div class="fg"><label>Valor FIPE (R$)</label>{{ form.valor_fipe }}{{ form.valor_fipe.errors }}</div>
+    </div>
+    <div class="fg"><label>Locadora / Proprietário</label>{{ form.locadora }}{{ form.locadora.errors }}</div>
+    <div class="fg-grid-3">
+      <div class="fg"><label>Valor Aluguel/mês</label>{{ form.valor_aluguel }}{{ form.valor_aluguel.errors }}</div>
+      <div class="fg"><label>Início Contrato</label>{{ form.dt_ini_contrato }}{{ form.dt_ini_contrato.errors }}</div>
+      <div class="fg"><label>Fim Contrato</label>{{ form.dt_fim_contrato }}{{ form.dt_fim_contrato.errors }}</div>
+    </div>
+  </div>
+
+  <!-- ── Informações Administrativas ──────────────── -->
+  <div class="section-card">
+    <div class="section-title">Informações Administrativas</div>
+    <div class="fg"><label>Secretaria <span class="req">*</span></label>{{ form.secretaria }}{{ form.secretaria.errors }}</div>
+    <div class="fg"><label>Centro de Custo <span class="req">*</span></label>{{ form.centro_custo }}{{ form.centro_custo.errors }}</div>
+  </div>
+
+  <!-- ── Equipamentos ───────────────────────────────── -->
+  <div class="section-card">
+    <div class="section-title">Equipamentos e Acessórios</div>
+    <div class="check-grid" style="margin-bottom:.85rem">
+      <label class="check-row">{{ form.eq_ar_condicionado }} Ar-condicionado</label>
+      <label class="check-row">{{ form.eq_direcao_hidraulica }} Direção hidráulica/elétrica</label>
+      <label class="check-row">{{ form.eq_vidros_eletricos }} Vidros elétricos</label>
+      <label class="check-row">{{ form.eq_som_multimidia }} Som / Multimídia</label>
+      <label class="check-row">{{ form.eq_radio_comunicador }} Rádio comunicador</label>
+      <label class="check-row">{{ form.eq_rodas_liga_leve }} Rodas de liga leve</label>
+      <label class="check-row">{{ form.eq_camera_re }} Câmera de ré</label>
+      <label class="check-row">{{ form.eq_sensor_estac }} Sensor de estacionamento</label>
+    </div>
+    <div class="fg"><label>Outros equipamentos</label>{{ form.eq_outros }}{{ form.eq_outros.errors }}</div>
+  </div>
+
+  <!-- ── Documentação ───────────────────────────────── -->
+  <div class="section-card full-width">
+    <div class="section-title">Documentação e Fotos</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.75rem">
+      <div class="fg"><label>CRLV</label>{{ form.crlv }}{{ form.crlv.errors }}</div>
+      <div class="fg"><label>Foto — Frente</label>{{ form.foto_frente }}{{ form.foto_frente.errors }}</div>
+      <div class="fg"><label>Foto — Lateral Esq.</label>{{ form.foto_lateral_e }}{{ form.foto_lateral_e.errors }}</div>
+      <div class="fg"><label>Foto — Lateral Dir.</label>{{ form.foto_lateral_d }}{{ form.foto_lateral_d.errors }}</div>
+      <div class="fg"><label>Foto — Traseira</label>{{ form.foto_traseira }}{{ form.foto_traseira.errors }}</div>
+      <div class="fg"><label>Foto — Hodômetro</label>{{ form.foto_hodometro }}{{ form.foto_hodometro.errors }}</div>
+      <div class="fg"><label>Outros Documentos</label>{{ form.outros_docs }}{{ form.outros_docs.errors }}</div>
+    </div>
+  </div>
+
+</div><!-- /form-layout -->
+
+<div style="margin-top:1.5rem;display:flex;gap:.75rem">
+  <button type="submit" class="btn btn-primary">💾 Salvar</button>
+  {% if veiculo %}
+    <a href="{% url 'veiculos:detalhe' veiculo.pk %}" class="btn btn-outline">Cancelar</a>
+  {% else %}
+    <a href="{% url 'veiculos:lista' %}" class="btn btn-outline">Cancelar</a>
+  {% endif %}
+</div>
+</form>
+
+<script>
+(function () {
+  const marcaSel  = document.getElementById('id_marca');
+  const modeloSel = document.getElementById('id_modelo');
+  const hint      = document.getElementById('modelo-hint');
+  const MAPA      = {{ form.modelo_marca_map_json|safe }};
+
+  // Guarda todas as options de modelo em memória
+  const allOpts = Array.from(modeloSel.options).map(o => ({
+    value: o.value, text: o.text,
+  }));
+
+  function filterModelos(marcaId) {
+    const current = modeloSel.value;
+    modeloSel.innerHTML = '';
+
+    const empty = document.createElement('option');
+    empty.value = ''; empty.text = '— Selecione o modelo —';
+    modeloSel.appendChild(empty);
+
+    if (!marcaId) {
+      hint.style.display = 'inline';
+      return;
+    }
+    hint.style.display = 'none';
+
+    allOpts.forEach(o => {
+      if (!o.value) return;
+      if (MAPA[o.value] !== marcaId) return;
+      const opt = document.createElement('option');
+      opt.value = o.value; opt.text = o.text;
+      if (o.value === current) opt.selected = true;
+      modeloSel.appendChild(opt);
+    });
+  }
+
+  marcaSel.addEventListener('change', () => filterModelos(marcaSel.value));
+
+  if (marcaSel.value) filterModelos(marcaSel.value);
+  else hint.style.display = 'inline';
+})();
+</script>
+{% endblock %}

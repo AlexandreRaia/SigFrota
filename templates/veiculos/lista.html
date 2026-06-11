@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}Veículos — SisGestaoFrota{% endblock %}
+
+{% block extra_head %}
+<style>
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+  @media(max-width:800px){ .kpi-grid { grid-template-columns: repeat(2,1fr); } }
+  .kpi-card { background:#fff; border:1px solid var(--gray-200); border-radius:var(--radius); padding:1.1rem 1.25rem; box-shadow:var(--shadow-sm); }
+  .kpi-label { font-size:.72rem; font-weight:700; text-transform:uppercase; color:var(--gray-400); margin-bottom:.35rem; }
+  .kpi-value { font-size:1.6rem; font-weight:800; color:var(--gray-900); line-height:1; }
+  .kpi-sub   { font-size:.75rem; color:var(--gray-400); margin-top:.25rem; }
+
+  .filter-bar { background:#fff; border:1px solid var(--gray-200); border-radius:var(--radius); padding:1rem 1.25rem; display:flex; flex-wrap:wrap; gap:.75rem; align-items:flex-end; margin-bottom:1.5rem; box-shadow:var(--shadow-sm); }
+  .filter-bar .fg { display:flex; flex-direction:column; gap:.3rem; min-width:150px; }
+  .filter-bar label { font-size:.75rem; font-weight:600; color:var(--gray-500); }
+  .filter-bar input, .filter-bar select { padding:.45rem .7rem; border:1.5px solid var(--gray-200); border-radius:var(--radius-sm); font-size:.875rem; color:var(--gray-900); outline:none; }
+  .filter-bar input:focus, .filter-bar select:focus { border-color:var(--brand-500); }
+
+  .btn { padding:.45rem 1rem; border-radius:var(--radius-sm); border:none; cursor:pointer; font-size:.875rem; font-weight:600; transition:var(--transition); display:inline-flex; align-items:center; gap:.3rem; }
+  .btn-primary { background:var(--brand-500); color:#fff; }
+  .btn-primary:hover { background:var(--brand-600); }
+  .btn-outline { background:#fff; color:var(--gray-700); border:1.5px solid var(--gray-200); }
+  .btn-outline:hover { border-color:var(--brand-500); color:var(--brand-600); }
+  .btn-sm { padding:.28rem .6rem; font-size:.75rem; }
+
+  .table-card { background:#fff; border-radius:var(--radius); border:1px solid var(--gray-200); overflow:hidden; box-shadow:var(--shadow-sm); }
+  table { width:100%; border-collapse:collapse; }
+  thead th { background:var(--gray-50); border-bottom:1px solid var(--gray-200); padding:.65rem 1rem; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--gray-500); text-align:left; }
+  tbody tr { border-bottom:1px solid var(--gray-100); }
+  tbody tr:last-child { border-bottom:none; }
+  tbody tr:hover { background:var(--gray-50); }
+  tbody td { padding:.7rem 1rem; font-size:.875rem; color:var(--gray-700); vertical-align:middle; }
+
+  .badge { display:inline-flex; align-items:center; padding:.2rem .55rem; border-radius:20px; font-size:.7rem; font-weight:700; }
+  .badge-disponivel  { background:#dcfce7; color:#15803d; }
+  .badge-manutencao  { background:#fff7ed; color:#c2410c; }
+  .badge-inativo     { background:var(--gray-100); color:var(--gray-500); }
+  .badge-proprio     { background:#eff6ff; color:#1d4ed8; }
+  .badge-locado      { background:#fef9c3; color:#854d0e; }
+  .badge-estadual    { background:#f3e8ff; color:#6b21a8; }
+  .badge-doacao      { background:#f0fdf4; color:#15803d; }
+
+  .placa-tag { font-family:monospace; font-weight:700; font-size:.85rem; background:var(--gray-100); padding:.18rem .55rem; border-radius:4px; color:var(--gray-800); letter-spacing:.05em; }
+  .empty-state { text-align:center; padding:4rem 2rem; color:var(--gray-400); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">🚗 Veículos</div>
+    <div class="page-subtitle">{{ total }} veículo{{ total|pluralize:"s" }} encontrado{{ total|pluralize:"s" }}</div>
+  </div>
+  <a href="{% url 'veiculos:criar' %}" class="btn btn-primary">＋ Novo Veículo</a>
+</div>
+
+<!-- KPIs -->
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-label">Total da frota</div>
+    <div class="kpi-value">{{ total }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Próprios</div>
+    <div class="kpi-value">{{ total_proprios }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Locados</div>
+    <div class="kpi-value">{{ total_locados }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Em Manutenção</div>
+    <div class="kpi-value" style="color:{% if em_manutencao %}#c2410c{% else %}var(--gray-900){% endif %}">{{ em_manutencao }}</div>
+  </div>
+</div>
+
+<!-- Filtros -->
+<form method="get" class="filter-bar">
+  <div class="fg" style="flex:1;min-width:200px">
+    <label>Buscar</label>
+    <input type="text" name="q" value="{{ f_q }}" placeholder="Placa, marca, modelo, patrimônio…">
+  </div>
+  <div class="fg">
+    <label>Tipo de Frota</label>
+    <select name="tipo_frota">
+      <option value="">Todos</option>
+      {% for v,l in tipo_frota_opts %}<option value="{{ v }}" {% if f_tipo_frota == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="fg">
+    <label>Secretaria</label>
+    <select name="secretaria">
+      <option value="">Todas</option>
+      {% for s in secretarias %}<option value="{{ s.pk }}" {% if f_secretaria == s.pk|stringformat:"s" %}selected{% endif %}>{{ s.sigla }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="fg">
+    <label>Status</label>
+    <select name="status">
+      <option value="">Todos</option>
+      {% for v,l in status_opts %}<option value="{{ v }}" {% if f_status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="fg">
+    <label>Tipo de Veículo</label>
+    <select name="tipo_veiculo">
+      <option value="">Todos</option>
+      {% for v,l in tipo_veiculo_opts %}<option value="{{ v }}" {% if f_tipo_v == v|stringformat:"s" %}selected{% endif %}>{{ l }}</option>{% endfor %}
+    </select>
+  </div>
+  <div style="display:flex;gap:.5rem;padding-top:1.1rem">
+    <button type="submit" class="btn btn-primary">Filtrar</button>
+    <a href="{% url 'veiculos:lista' %}" class="btn btn-outline">Limpar</a>
+  </div>
+</form>
+
+<!-- Tabela -->
+<div class="table-card">
+  <table>
+    <thead>
+      <tr>
+        <th>Placa</th>
+        <th>Marca / Modelo</th>
+        <th>Tipo</th>
+        <th>Frota</th>
+        <th>Secretaria</th>
+        <th>KM Atual</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for v in veiculos %}
+      <tr>
+        <td><span class="placa-tag">{{ v.placa }}</span></td>
+        <td>
+          <div style="font-weight:600;color:var(--gray-900)">{{ v.marca.nome }}</div>
+          <div style="font-size:.78rem;color:var(--gray-400)">{{ v.modelo.nome }} · {{ v.ano_fabricacao }}</div>
+        </td>
+        <td>{{ v.tipo_veiculo.nome|default:"—" }}</td>
+        <td>
+          {% if v.tipo_frota == "PROPRIO" %}<span class="badge badge-proprio">Próprio</span>
+          {% elif v.tipo_frota == "LOCADO" %}<span class="badge badge-locado">Locado</span>
+          {% elif v.tipo_frota == "ESTADUAL" %}<span class="badge badge-estadual">Estadual</span>
+          {% else %}<span class="badge badge-doacao">Doação</span>{% endif %}
+        </td>
+        <td><span title="{{ v.secretaria.nome }}">{{ v.secretaria.sigla }}</span></td>
+        <td>{{ v.ultimo_km|default:v.km_entrada }} km</td>
+        <td>
+          {% if v.status == "DISPONIVEL" %}<span class="badge badge-disponivel">Disponível</span>
+          {% elif v.status == "EM_MANUTENCAO" %}<span class="badge badge-manutencao">Manutenção</span>
+          {% else %}<span class="badge badge-inativo">Inativo</span>{% endif %}
+        </td>
+        <td style="white-space:nowrap">
+          <a href="{% url 'veiculos:detalhe' v.pk %}" class="btn btn-outline btn-sm">Ver</a>
+          <a href="{% url 'veiculos:editar' v.pk %}" class="btn btn-outline btn-sm">✏️</a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="8"><div class="empty-state"><span style="font-size:2.5rem">🚗</span><br>Nenhum veículo encontrado.</div></td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

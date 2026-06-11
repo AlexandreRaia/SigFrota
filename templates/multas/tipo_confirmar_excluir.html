@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Excluir Tipo — SisGestaoFrota{% endblock %}
+{% block content %}
+<div class="page-header"><div class="page-title">Confirmar exclusão</div></div>
+<div style="background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);padding:2rem;max-width:500px;box-shadow:var(--shadow-sm)">
+  <p style="font-size:.95rem;color:var(--gray-700);margin-bottom:1.5rem">
+    Excluir o tipo <strong>{{ tipo }}</strong>?
+    {% if tipo.multas.count > 0 %}
+    <br><span style="color:var(--red-600);font-size:.875rem">⚠️ Existem {{ tipo.multas.count }} multa(s) vinculadas — a exclusão não será permitida.</span>
+    {% endif %}
+  </p>
+  <form method="post" style="display:flex;gap:.75rem">
+    {% csrf_token %}
+    <button type="submit" class="btn" style="background:#fee2e2;color:var(--red-600);border:1.5px solid #fecaca;padding:.5rem 1.2rem;border-radius:var(--radius-sm);font-weight:600;cursor:pointer">Confirmar exclusão</button>
+    <a href="{% url 'multas:tipos_lista' %}" style="padding:.5rem 1.2rem;border-radius:var(--radius-sm);border:1.5px solid var(--gray-200);font-weight:600;color:var(--gray-700);text-decoration:none">Cancelar</a>
+  </form>
+</div>
+{% endblock %}

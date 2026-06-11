@@ -1,0 +1,21 @@
+# SisGestaoFrota — Dependências
+# Gere com: pip freeze > requirements.txt
+
+# Framework principal
+Django==6.0.5
+
+# REST API
+djangorestframework==3.17.1
+
+# Variáveis de ambiente
+django-environ==0.13.0
+
+# Troca de banco com uma linha: SQLite3 (dev) → PostgreSQL (prod)
+dj-database-url==3.1.2
+psycopg2-binary==2.9.12   # driver PostgreSQL
+
+# Upload de imagens
+Pillow==12.2.0
+
+# Utilitários ASGI
+asgiref==3.11.1

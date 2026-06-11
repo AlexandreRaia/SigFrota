@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Editar Tipo de Multa — SisGestaoFrota{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-title">✏️ Editar Tipo — {{ tipo.codigo }}</div>
+</div>
+<div style="background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);padding:1.5rem;max-width:480px;box-shadow:var(--shadow-sm)">
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+    <div style="display:flex;flex-direction:column;gap:.3rem;margin-bottom:.85rem">
+      <label style="font-size:.8rem;font-weight:600;color:var(--gray-500)">{{ field.label }}</label>
+      {{ field }}
+      {% if field.errors %}<ul style="list-style:none;color:var(--red-600);font-size:.75rem;margin:.2rem 0 0">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    {% endfor %}
+    <div style="display:flex;gap:.75rem;margin-top:1.25rem">
+      <button type="submit" class="btn btn-primary" style="padding:.5rem 1.2rem;border-radius:var(--radius-sm);border:none;cursor:pointer;font-weight:600;background:var(--brand-500);color:#fff">💾 Salvar</button>
+      <a href="{% url 'multas:tipos_lista' %}" style="padding:.5rem 1.2rem;border-radius:var(--radius-sm);border:1.5px solid var(--gray-200);font-weight:600;color:var(--gray-700);text-decoration:none">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

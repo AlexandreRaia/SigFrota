@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }} — Multas{% endblock %}
+
+{% block extra_head %}
+<style>
+  .card { background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow-sm); max-width: 860px; }
+  .card-title { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--gray-400); margin-bottom: 1.25rem; border-bottom: 1px solid var(--gray-100); padding-bottom: .5rem; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem 1.25rem; }
+  .form-grid .full { grid-column: 1 / -1; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+  .fg { display: flex; flex-direction: column; gap: .3rem; }
+  .fg label { font-size: .8rem; font-weight: 600; color: var(--gray-500); }
+  .fg .hint { font-size: .72rem; color: var(--gray-400); }
+  .form-control { padding: .45rem .7rem; border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm); font-size: .875rem; color: var(--gray-900); outline: none; width: 100%; transition: border-color .15s; }
+  .form-control:focus { border-color: var(--brand-500); }
+  .form-control-file { font-size: .875rem; }
+  .btn { padding: .5rem 1.2rem; border-radius: var(--radius-sm); border: none; cursor: pointer; font-size: .875rem; font-weight: 600; transition: var(--transition); }
+  .btn-primary { background: var(--brand-500); color: #fff; }
+  .btn-primary:hover { background: var(--brand-600); }
+  .btn-outline { background: #fff; color: var(--gray-700); border: 1.5px solid var(--gray-200); }
+  .btn-outline:hover { border-color: var(--brand-500); color: var(--brand-600); }
+  .section-sep { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--gray-400); margin: 1.25rem 0 .5rem; border-bottom: 1px solid var(--gray-100); padding-bottom: .3rem; grid-column: 1 / -1; }
+  .errorlist { list-style: none; color: var(--red-600); font-size: .78rem; margin-top: .2rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">{{ titulo }}</div>
+    <div class="page-subtitle">Módulo de Multas — M09</div>
+  </div>
+  <a href="{% url 'multas:lista' %}" class="btn btn-outline" style="display:inline-flex">← Voltar</a>
+</div>
+
+<div class="card">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="form-grid">
+
+      <div class="section-sep">Identificação</div>
+
+      <div class="fg">
+        <label>Placa *</label>
+        {{ form.placa }}
+        {{ form.placa.errors }}
+      </div>
+      <div class="fg">
+        <label>Condutor</label>
+        {{ form.condutor }}
+        <span class="hint">Pode ser preenchido depois (dentro do prazo de indicação)</span>
+        {{ form.condutor.errors }}
+      </div>
+
+      <div class="section-sep">Infração</div>
+
+      <div class="fg">
+        <label>Data da infração *</label>
+        {{ form.data_infracao }}
+        {{ form.data_infracao.errors }}
+      </div>
+      <div class="fg">
+        <label>Tipo de Infração *</label>
+        {{ form.tipo_infracao }}
+        {{ form.tipo_infracao.errors }}
+        <span style="font-size:.72rem;color:var(--gray-400)">O código DENATRAN é preenchido automaticamente pelo tipo selecionado. <a href="{% url 'multas:tipos_lista' %}">Gerenciar tipos ↗</a></span>
+      </div>
+      <div class="fg">
+        <label>Pontos na CNH *</label>
+        {{ form.pontos }}
+        {{ form.pontos.errors }}
+      </div>
+      <div class="fg">
+        <label>Valor da multa (R$) *</label>
+        {{ form.valor }}
+        {{ form.valor.errors }}
+      </div>
+
+      <div class="section-sep">Situação e Prazos</div>
+
+      <div class="fg">
+        <label>Status *</label>
+        {{ form.status }}
+        {{ form.status.errors }}
+      </div>
+      <div class="fg">
+        <label>Data de vencimento *</label>
+        {{ form.data_vencimento }}
+        {{ form.data_vencimento.errors }}
+      </div>
+      <div class="fg">
+        <label>Prazo para indicação do condutor</label>
+        {{ form.prazo_indicacao }}
+        <span class="hint">Prazo legal para indicar o responsável ao órgão autuador</span>
+        {{ form.prazo_indicacao.errors }}
+      </div>
+      <div class="fg">
+        <label>Prazo para defesa prévia</label>
+        {{ form.prazo_defesa }}
+        <span class="hint">Prazo para apresentação de defesa ou recurso</span>
+        {{ form.prazo_defesa.errors }}
+      </div>
+
+      <div class="section-sep">Documentação</div>
+
+      <div class="fg">
+        <label>Notificação (PDF)</label>
+        {% if multa and multa.arquivo %}
+          <span style="font-size:.8rem;color:var(--gray-500)">Arquivo atual: <a href="{{ multa.arquivo.url }}" target="_blank">📄 Ver PDF</a> — envie novo para substituir</span>
+        {% endif %}
+        {{ form.arquivo }}
+        {{ form.arquivo.errors }}
+      </div>
+      <div class="fg full">
+        <label>Observação</label>
+        {{ form.observacao }}
+        {{ form.observacao.errors }}
+      </div>
+
+    </div>
+
+    <div style="margin-top:1.5rem;display:flex;gap:.75rem">
+      <button type="submit" class="btn btn-primary">💾 Salvar</button>
+      <a href="{% url 'multas:lista' %}" class="btn btn-outline">Cancelar</a>
+      {% if multa and user.perfil == "ADMIN" or multa and user.is_superuser %}
+      <form method="post" action="{% url 'multas:excluir' multa.pk %}" style="margin:0" onsubmit="return confirm('Excluir esta multa?')">
+        {% csrf_token %}<button type="submit" class="btn" style="background:#fee2e2;color:var(--red-600);border:1.5px solid #fecaca">🗑 Excluir</button>
+      </form>
+      {% endif %}
+    </div>
+  </form>
+</div>
+{% endblock %}

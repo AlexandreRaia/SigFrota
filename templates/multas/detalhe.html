@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Multa {{ multa.placa }} — SisGestaoFrota{% endblock %}
+
+{% block extra_head %}
+<style>
+  .ficha-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start; }
+  @media (max-width: 720px) { .ficha-grid { grid-template-columns: 1fr; } }
+  .card { background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow-sm); }
+  .card-title { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--gray-400); margin-bottom: 1rem; border-bottom: 1px solid var(--gray-100); padding-bottom: .5rem; }
+  .info-list { list-style: none; }
+  .info-list li { display: flex; justify-content: space-between; padding: .45rem 0; border-bottom: 1px solid var(--gray-100); font-size: .875rem; gap: .5rem; }
+  .info-list li:last-child { border-bottom: none; }
+  .info-list .lbl { color: var(--gray-400); font-weight: 500; flex-shrink: 0; }
+  .info-list .val { color: var(--gray-900); font-weight: 600; text-align: right; }
+  .badge { display: inline-flex; align-items: center; padding: .25rem .65rem; border-radius: 20px; font-size: .75rem; font-weight: 700; }
+  .badge-pendente   { background: #fef9c3; color: #854d0e; }
+  .badge-paga       { background: #dcfce7; color: #15803d; }
+  .badge-contestada { background: #dbeafe; color: #1e40af; }
+  .badge-vencida    { background: #fee2e2; color: var(--red-600); }
+  .btn { padding: .45rem 1rem; border-radius: var(--radius-sm); border: none; cursor: pointer; font-size: .875rem; font-weight: 600; transition: var(--transition); text-align: center; display: inline-flex; }
+  .btn-primary { background: var(--brand-500); color: #fff; }
+  .btn-primary:hover { background: var(--brand-600); color: #fff; }
+  .btn-outline { background: #fff; color: var(--gray-700); border: 1.5px solid var(--gray-200); }
+  .btn-outline:hover { border-color: var(--brand-500); color: var(--brand-600); }
+  .pdf-box { background: var(--gray-50); border: 1.5px dashed var(--gray-200); border-radius: var(--radius-sm); padding: 1.25rem; text-align: center; }
+  .alert-prazo { background: #fff7ed; border: 1px solid #fed7aa; border-radius: var(--radius-sm); padding: .75rem 1rem; font-size: .875rem; color: #c2410c; font-weight: 500; margin-bottom: 1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Multa — {{ multa.placa }}</div>
+    <div class="page-subtitle">{% if multa.tipo_infracao %}{{ multa.tipo_infracao.descricao }}{% else %}—{% endif %} · {{ multa.data_infracao }}</div>
+  </div>
+  <div style="display:flex;gap:.5rem">
+    {% if user.perfil == "ADMIN" or user.perfil == "GESTOR" or user.is_superuser %}
+    <a href="{% url 'multas:editar' multa.pk %}" class="btn btn-primary">✏️ Editar</a>
+    {% endif %}
+    <a href="{% url 'multas:lista' %}" class="btn btn-outline">← Voltar</a>
+  </div>
+</div>
+
+{% with hoje=multa.prazo_indicacao %}
+{% if multa.prazo_indicacao and multa.status == "PENDENTE" %}
+<div class="alert-prazo">⏰ Prazo de indicação do condutor: <strong>{{ multa.prazo_indicacao }}</strong></div>
+{% endif %}
+{% endwith %}
+
+<div class="ficha-grid">
+  <div>
+    <div class="card">
+      <div class="card-title">Dados da Infração</div>
+      <ul class="info-list">
+        <li><span class="lbl">Placa</span><span class="val"><strong>{{ multa.placa }}</strong></span></li>
+        <li><span class="lbl">Condutor</span><span class="val">{{ multa.condutor.nome|default:"Não identificado" }}</span></li>
+        <li><span class="lbl">Data</span><span class="val">{{ multa.data_infracao }}</span></li>
+        <li><span class="lbl">Tipo</span><span class="val">{% if multa.tipo_infracao %}{{ multa.tipo_infracao.descricao }}{% else %}—{% endif %}</span></li>
+        <li><span class="lbl">Cód. DENATRAN</span><span class="val">{{ multa.tipo_infracao.codigo|default:"—" }}</span></li>
+        <li><span class="lbl">Natureza</span><span class="val">{% if multa.tipo_infracao %}{{ multa.tipo_infracao.get_natureza_display }}{% else %}—{% endif %}</span></li>
+        <li><span class="lbl">Pontos</span><span class="val">{{ multa.pontos }}</span></li>
+        <li><span class="lbl">Valor</span><span class="val"><strong>R$ {{ multa.valor|floatformat:2 }}</strong></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-title">Situação e Prazos</div>
+      <ul class="info-list">
+        <li>
+          <span class="lbl">Status</span>
+          <span class="val"><span class="badge badge-{{ multa.status|lower }}">{{ multa.get_status_display }}</span></span>
+        </li>
+        <li><span class="lbl">Vencimento pagamento</span><span class="val">{{ multa.data_vencimento }}</span></li>
+        <li><span class="lbl">Prazo indicação</span><span class="val">{{ multa.prazo_indicacao|default:"—" }}</span></li>
+        <li><span class="lbl">Prazo defesa</span><span class="val">{{ multa.prazo_defesa|default:"—" }}</span></li>
+      </ul>
+    </div>
+
+    {% if multa.arquivo %}
+    <div class="card" style="margin-top:1rem">
+      <div class="card-title">Notificação</div>
+      <div class="pdf-box">
+        <div style="font-size:2rem">📄</div>
+        <div style="font-size:.875rem;color:var(--gray-500);margin:.5rem 0">Arquivo PDF anexado</div>
+        <a href="{{ multa.arquivo.url }}" target="_blank" class="btn btn-outline">Abrir PDF</a>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if multa.observacao %}
+    <div class="card" style="margin-top:1rem">
+      <div class="card-title">Observação</div>
+      <p style="font-size:.875rem;color:var(--gray-700)">{{ multa.observacao }}</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
