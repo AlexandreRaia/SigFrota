@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Nova SMV{% endblock %}
+
+{% block extra_head %}
+<style>
+  .form-card { background:#fff; border:1px solid var(--gray-200); border-radius:var(--radius); box-shadow:var(--shadow-sm); max-width:700px; }
+  .form-card-header { padding:.85rem 1.25rem; border-bottom:1px solid var(--gray-100); font-weight:700; font-size:.95rem; }
+  .form-card-body { padding:1.5rem 1.25rem; display:flex; flex-direction:column; gap:1rem; }
+  .fg { display:flex; flex-direction:column; gap:.3rem; }
+  .fg label { font-size:.78rem; font-weight:700; color:var(--gray-500); text-transform:uppercase; }
+  .fg input, .fg select, .fg textarea { padding:.55rem .75rem; border:1.5px solid var(--gray-200); border-radius:var(--radius-sm); font-size:.875rem; font-family:inherit; }
+  .fg input:focus, .fg select:focus, .fg textarea:focus { border-color:var(--brand-500); outline:none; }
+  .fg-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+  .btn { padding:.5rem 1.1rem; border-radius:var(--radius-sm); border:none; cursor:pointer; font-size:.875rem; font-weight:600; transition:var(--transition); display:inline-flex; align-items:center; gap:.4rem; text-decoration:none; }
+  .btn-primary { background:var(--brand-500); color:#fff; }
+  .btn-primary:hover { background:var(--brand-600); color:#fff; }
+  .btn-outline { background:#fff; color:var(--gray-700); border:1.5px solid var(--gray-200); }
+  .btn-outline:hover { border-color:var(--brand-500); color:var(--brand-600); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">🔧 Nova Solicitação de Manutenção (SMV)</div>
+  <a href="{% url 'manutencao:lista' %}" class="btn btn-outline">← Cancelar</a>
+</div>
+
+<div class="form-card">
+  <div class="form-card-header">Dados da SMV</div>
+  <form method="post" class="form-card-body">
+    {% csrf_token %}
+
+    <div class="fg">
+      <label>Veículo *</label>
+      <select name="veiculo" required>
+        <option value="">Selecione o veículo…</option>
+        {% for v in veiculos %}
+        <option value="{{ v.pk }}">{{ v.placa }} — {{ v.marca }} {{ v.modelo }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="fg">
+      <label>KM atual do veículo</label>
+      <input type="number" name="km_entrada" min="0" placeholder="Ex: 45000">
+    </div>
+
+    <div class="fg">
+      <label>Descrição do problema / falha *</label>
+      <textarea name="descricao_problema" rows="5" required placeholder="Descreva detalhadamente os sintomas observados, quando ocorrem, etc."></textarea>
+    </div>
+
+    <div style="display:flex;gap:.75rem;justify-content:flex-end">
+      <a href="{% url 'manutencao:lista' %}" class="btn btn-outline">Cancelar</a>
+      <button type="submit" class="btn btn-primary">➜ Abrir SMV</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -5,12 +5,17 @@ Cada módulo/app tem suas próprias urls.py incluídas aqui.
 
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
     # Autenticação
     path("", include("apps.usuarios.urls")),
+
+    # Grappelli — redireciona /grappelli/ para o admin e registra rotas auxiliares
+    path("grappelli/", RedirectView.as_view(url='/admin/')),
+    path("grappelli/", include("grappelli.urls")),
 
     # Painel administrativo Django
     path("admin/", admin.site.urls),
@@ -20,7 +25,7 @@ urlpatterns = [
     path("veiculos/", include("apps.veiculos.urls")),            # M02
     path("api/veiculos/", include("apps.veiculos.api_urls")),    # API veículos
     path("condutores/", include("apps.condutores.urls")),        # M03
-    path("manutencao/", include("apps.manutencao.urls")),        # M04 SMV
+    path("manutencao/", include(("apps.manutencao.urls", "manutencao"))),  # M04 SMV
     path("preventiva/", include("apps.preventiva.urls")),        # M05
     path("agendamento/", include("apps.agendamento.urls")),      # M06
     path("abastecimento/", include("apps.abastecimento.urls")),  # M07
