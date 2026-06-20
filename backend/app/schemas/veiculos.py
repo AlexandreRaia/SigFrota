@@ -1,0 +1,210 @@
+from datetime import date
+from pydantic import BaseModel, Field
+
+
+# ── Entidades Parametrizadoras ──────────────────────────────────────────────
+
+class CategoriaResponse(BaseModel):
+    """Categoria de veículo (Passeio, Utilitário, Ambulância, etc)."""
+    id: int
+    nome: str
+    ativa: bool
+
+    model_config = {"from_attributes": True}
+
+
+class TipoFrotaResponse(BaseModel):
+    """Tipo de frota (Próprio, Locado, Convênio, Cedido)."""
+    id: int
+    nome: str
+    ativa: bool
+
+    model_config = {"from_attributes": True}
+
+
+class UnidadeResponse(BaseModel):
+    """Unidade administrativa."""
+    id: int
+    nome: str
+    secretaria_id: int | None = None
+    ativa: bool
+
+    model_config = {"from_attributes": True}
+
+
+class SubunidadeResponse(BaseModel):
+    """Subunidade administrativa."""
+    id: int
+    nome: str
+    unidade_id: int | None = None
+    ativa: bool
+
+    model_config = {"from_attributes": True}
+
+
+class CentroCustoResponse(BaseModel):
+    """Centro de custo para alocação de despesas."""
+    id: int
+    codigo: str
+    nome: str
+    ativa: bool
+
+    model_config = {"from_attributes": True}
+
+
+# ── Marca e Modelo ──────────────────────────────────────────────────────────
+
+class TipoVeiculoResponse(BaseModel):
+    """Tipo de registro (VEICULO, MAQUINA, EQUIPAMENTO)."""
+    id: int
+    nome: str
+    ativo: bool
+
+    model_config = {"from_attributes": True}
+
+
+class MarcaResponse(BaseModel):
+    id: int
+    nome: str
+    ativo: bool
+
+    model_config = {"from_attributes": True}
+
+
+class ModeloResponse(BaseModel):
+    id: int
+    nome: str
+    marca_id: int
+    tipo_veiculo_id: int | None = None
+    ativo: bool
+
+    model_config = {"from_attributes": True}
+
+
+# ── Veículo ────────────────────────────────────────────────────────────────────
+
+class VeiculoBase(BaseModel):
+    """Base com todos os campos do veículo (8 seções conforme especificação)."""
+    
+    # 4.2.1 DADOS GERAIS
+    placa: str = Field(..., description="Placa do veículo (ex: ABC-1234)")
+    chassi: str = Field(..., description="Número do chassi")
+    renavam: str = Field(..., description="RENAVAM do veículo")
+    marca_id: int | None = None
+    modelo_id: int | None = None
+    ano_fabricacao: int = Field(..., description="Ano de fabricação")
+    ano_modelo: int | None = None
+    cor: str = ""
+    combustivel: str = Field(default="FLEX", description="Tipo de combustível")
+    motorizacao: str = ""
+    observacoes: str = ""
+    situacao: str = "ATIVA"
+    
+    # 4.2.2 CLASSIFICAÇÃO
+    prefixo: str = Field(..., description="Prefixo identificador único")
+    tipo_frota_id: int | None = None
+    categoria_id: int | None = None
+    
+    # 4.2.3 ADMINISTRATIVA
+    secretaria_id: int | None = None
+    unidade_id: int | None = None
+    subunidade_id: int | None = None
+    centro_custo_id: int | None = None
+    
+    # 4.2.4 OPERACIONAL
+    tipo_registro_id: int | None = None
+    tipo_controle: str = "QUILOMETRAGEM"  # QUILOMETRAGEM ou HORIMETRO
+    hodometro_horimetro_inicial: int = 0
+    capacidade_tanque: int | None = None
+    capacidade_passageiros: int | None = None
+    capacidade_carga: int | None = None
+    
+    # 4.2.5 DOCUMENTAÇÃO
+    vencimento_licenciamento: date | None = None
+    vencimento_seguro: date | None = None
+    
+    # 4.2.6 LOCALIZAÇÃO
+    uf: str = "SP"
+    municipio: str = ""
+
+
+class VeiculoCreate(VeiculoBase):
+    """Schema para criar um veículo."""
+    pass
+
+
+class VeiculoUpdate(BaseModel):
+    """Schema para atualizar um veículo (todos os campos opcionais)."""
+    
+    # 4.2.1 DADOS GERAIS
+    placa: str | None = None
+    chassi: str | None = None
+    renavam: str | None = None
+    marca_id: int | None = None
+    modelo_id: int | None = None
+    ano_fabricacao: int | None = None
+    ano_modelo: int | None = None
+    cor: str | None = None
+    combustivel: str | None = None
+    motorizacao: str | None = None
+    observacoes: str | None = None
+    situacao: str | None = None
+    
+    # 4.2.2 CLASSIFICAÇÃO
+    prefixo: str | None = None
+    tipo_frota_id: int | None = None
+    categoria_id: int | None = None
+    
+    # 4.2.3 ADMINISTRATIVA
+    secretaria_id: int | None = None
+    unidade_id: int | None = None
+    subunidade_id: int | None = None
+    centro_custo_id: int | None = None
+    
+    # 4.2.4 OPERACIONAL
+    tipo_registro_id: int | None = None
+    tipo_controle: str | None = None
+    hodometro_horimetro_inicial: int | None = None
+    capacidade_tanque: int | None = None
+    capacidade_passageiros: int | None = None
+    capacidade_carga: int | None = None
+    
+    # 4.2.5 DOCUMENTAÇÃO
+    vencimento_licenciamento: date | None = None
+    vencimento_seguro: date | None = None
+    
+    # 4.2.6 LOCALIZAÇÃO
+    uf: str | None = None
+    municipio: str | None = None
+
+
+class VeiculoResponse(VeiculoBase):
+    """Response com todos os dados + relações."""
+    id: int
+    
+    # Relações
+    marca: MarcaResponse | None = None
+    modelo: ModeloResponse | None = None
+    tipo_veiculo: TipoVeiculoResponse | None = None
+    tipo_frota: TipoFrotaResponse | None = None
+    categoria: CategoriaResponse | None = None
+    unidade: UnidadeResponse | None = None
+    subunidade: SubunidadeResponse | None = None
+    centro_custo: CentroCustoResponse | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class VeiculoListItem(BaseModel):
+    """Versão compacta para listagens."""
+    id: int
+    placa: str
+    prefixo: str
+    marca: MarcaResponse | None = None
+    modelo: ModeloResponse | None = None
+    ano_fabricacao: int
+    situacao: str
+    categoria: CategoriaResponse | None = None
+    combustivel: str
+
+    model_config = {"from_attributes": True}
