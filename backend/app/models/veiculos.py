@@ -23,11 +23,11 @@ class Categoria(Base):
 
 
 class TipoFrota(Base):
-    """Tipo de frota: Próprio, Locado, Convênio, Cedido."""
+    """Tipo de frota: Próprio, Locado, Convênio."""
     __tablename__ = "tipos_frota"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    nome: Mapped[str] = mapped_column(String(50), unique=True)  # PROPRIO, LOCADO, CONVENIO, CEDIDO
+    nome: Mapped[str] = mapped_column(String(50), unique=True)  # PROPRIO, LOCADO, CONVENIO
     ativa: Mapped[bool] = mapped_column(Boolean, default=True)
 
     veiculos: Mapped[list["Veiculo"]] = relationship(back_populates="tipo_frota_ref")
@@ -134,7 +134,7 @@ class Veiculo(Base, TimestampMixin):
 
     # Status: ATIVO | INATIVO
     # TipoRegistro: VEICULO | MAQUINA | EQUIPAMENTO
-    # TipoFrota: PROPRIO | LOCADO | CONVENIO | CEDIDO
+    # TipoFrota: PROPRIO | LOCADO | CONVENIO
     # Combustível: GASOLINA | DIESEL | FLEX | ELETRICO | GNV
     # TipoControle: QUILOMETRAGEM | HORIMETRO
     # Cor: lista de cores comuns
@@ -156,18 +156,24 @@ class Veiculo(Base, TimestampMixin):
     situacao: Mapped[str] = mapped_column(String(10), default="ATIVO")  # ATIVO | INATIVO
 
     # ─── 4.2.2 CLASSIFICAÇÃO DA FROTA
-    prefixo: Mapped[str] = mapped_column(String(20), unique=True, index=True)
+    prefixo: Mapped[str | None] = mapped_column(String(20), unique=True, index=True, nullable=True)
     tipo_frota_id: Mapped[int] = mapped_column(ForeignKey("tipos_frota.id"))
     categoria_id: Mapped[int] = mapped_column(ForeignKey("categorias.id"))
+    numero_patrimonio: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    valor_aquisicao: Mapped[float | None] = mapped_column(nullable=True)  # Para patrimônio
+    tipo_aquisicao: Mapped[str | None] = mapped_column(String(20), nullable=True)  # COMPRADO ou DOADO
+    tipo_convenio: Mapped[str | None] = mapped_column(String(20), nullable=True)  # PM ou BOMBEIROS
+    nome_locador: Mapped[str | None] = mapped_column(String(120), nullable=True)  # Para locados
+    valor_locacao: Mapped[float | None] = mapped_column(nullable=True)  # Para locados
 
     # ─── 4.2.3 VINCULAÇÃO ADMINISTRATIVA
-    secretaria_id: Mapped[int] = mapped_column(ForeignKey("secretarias.id"))
+    secretaria_id: Mapped[int | None] = mapped_column(ForeignKey("secretarias.id"), nullable=True)
     unidade_id: Mapped[int | None] = mapped_column(ForeignKey("unidades.id"), nullable=True)
     subunidade_id: Mapped[int | None] = mapped_column(ForeignKey("subunidades.id"), nullable=True)
-    centro_custo_id: Mapped[int] = mapped_column(ForeignKey("centros_custo.id"))
+    centro_custo_id: Mapped[int | None] = mapped_column(ForeignKey("centros_custo.id"), nullable=True)
 
     # ─── 4.2.4 DADOS OPERACIONAIS
-    tipo_registro_id: Mapped[int] = mapped_column(ForeignKey("tipos_veiculo.id"))  # VEICULO | MAQUINA | EQUIPAMENTO
+    tipo_registro_id: Mapped[int | None] = mapped_column(ForeignKey("tipos_veiculo.id"), nullable=True)  # VEICULO | MAQUINA | EQUIPAMENTO
     tipo_controle: Mapped[str] = mapped_column(String(20), default="QUILOMETRAGEM")  # QUILOMETRAGEM | HORIMETRO
     hodometro_horimetro_inicial: Mapped[int] = mapped_column(Integer, default=0)
     capacidade_tanque: Mapped[int | None] = mapped_column(Integer, nullable=True)  # Litros
@@ -177,8 +183,21 @@ class Veiculo(Base, TimestampMixin):
     # ─── 4.2.5 DOCUMENTAÇÃO BÁSICA (Vencimentos)
     vencimento_licenciamento: Mapped[str | None] = mapped_column(Date, nullable=True)
     vencimento_seguro: Mapped[str | None] = mapped_column(Date, nullable=True)
+    vencimento_ipva: Mapped[str | None] = mapped_column(Date, nullable=True)
 
-    # ─── 4.2.6 LOCALIZAÇÃO ADMINISTRATIVA
+    # ─── 4.2.6 DADOS TÉCNICOS
+    cilindrada: Mapped[int | None] = mapped_column(Integer, nullable=True)  # em cc
+    potencia: Mapped[int | None] = mapped_column(Integer, nullable=True)  # em cv
+    transmissao: Mapped[str | None] = mapped_column(String(20), nullable=True)  # MANUAL, AUTOMATICA, CVT
+    tracao: Mapped[str | None] = mapped_column(String(10), nullable=True)  # 2WD, 4WD, FWD, RWD
+    vidros_eletricos: Mapped[bool] = mapped_column(Boolean, default=False)
+    direcao: Mapped[str | None] = mapped_column(String(20), nullable=True)  # MANUAL, HIDRAULICA, ELETRICA
+    ar_condicionado: Mapped[bool] = mapped_column(Boolean, default=False)
+    pneu_dimensao: Mapped[str | None] = mapped_column(String(20), nullable=True)  # Ex: 195/65R15
+    pneu_velocidade: Mapped[str | None] = mapped_column(String(5), nullable=True)  # Ex: H, V, W
+    pneu_carga: Mapped[str | None] = mapped_column(String(5), nullable=True)  # Ex: 91, 92, 93
+
+    # ─── 4.2.7 LOCALIZAÇÃO ADMINISTRATIVA
     uf: Mapped[str] = mapped_column(String(2), default="SP")
     municipio: Mapped[str] = mapped_column(String(120), default="")
 
@@ -188,10 +207,34 @@ class Veiculo(Base, TimestampMixin):
     tipo_registro: Mapped["TipoVeiculo"] = relationship(back_populates="veiculos")
     categoria: Mapped["Categoria"] = relationship(back_populates="veiculos")
     tipo_frota_ref: Mapped["TipoFrota"] = relationship(back_populates="veiculos", foreign_keys=[tipo_frota_id])
-    secretaria: Mapped["Secretaria"] = relationship(back_populates="veiculos")
+    secretaria: Mapped["Secretaria | None"] = relationship(back_populates="veiculos")
     unidade: Mapped["Unidade | None"] = relationship(back_populates="veiculos")
     subunidade: Mapped["Subunidade | None"] = relationship(back_populates="veiculos")
-    centro_custo_ref: Mapped["CentroCusto"] = relationship(back_populates="veiculos")
+    centro_custo_ref: Mapped["CentroCusto | None"] = relationship(back_populates="veiculos")
+    documentos: Mapped[list["VeiculoDocumento"]] = relationship(back_populates="veiculo", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"<Veiculo {self.placa}>"
+
+
+class VeiculoDocumento(Base, TimestampMixin):
+    """Armazena documentos e fotos de veículos (CRLV, NF, seguros, fotos, etc)."""
+    __tablename__ = "veiculo_documentos"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    veiculo_id: Mapped[int] = mapped_column(ForeignKey("veiculos.id"), index=True)
+    
+    # FOTO, CRLV, NF_COMPRA, APOLICE_SEGURO, INSPECAO, MANUTENCAO, OUTRO
+    tipo: Mapped[str] = mapped_column(String(30))
+    
+    # Nome do arquivo no servidor (sem caminho completo)
+    arquivo: Mapped[str] = mapped_column(String(255))
+    
+    # Descrição opcional do documento
+    descricao: Mapped[str] = mapped_column(String(200), default="")
+    
+    # Relacionamento
+    veiculo: Mapped["Veiculo"] = relationship(back_populates="documentos")
+
+    def __repr__(self) -> str:
+        return f"<VeiculoDocumento {self.tipo} - {self.arquivo}>"

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from pydantic import BaseModel, Field
 
 
@@ -14,7 +14,7 @@ class CategoriaResponse(BaseModel):
 
 
 class TipoFrotaResponse(BaseModel):
-    """Tipo de frota (Próprio, Locado, Convênio, Cedido)."""
+    """Tipo de frota (Próprio, Locado, Convênio)."""
     id: int
     nome: str
     ativa: bool
@@ -75,7 +75,6 @@ class ModeloResponse(BaseModel):
     id: int
     nome: str
     marca_id: int
-    tipo_veiculo_id: int | None = None
     ativo: bool
 
     model_config = {"from_attributes": True}
@@ -98,12 +97,18 @@ class VeiculoBase(BaseModel):
     combustivel: str = Field(default="FLEX", description="Tipo de combustível")
     motorizacao: str = ""
     observacoes: str = ""
-    situacao: str = "ATIVA"
+    situacao: str = "ATIVO"
     
     # 4.2.2 CLASSIFICAÇÃO
     prefixo: str = Field(..., description="Prefixo identificador único")
     tipo_frota_id: int | None = None
     categoria_id: int | None = None
+    numero_patrimonio: str | None = None
+    valor_aquisicao: float | None = None
+    tipo_aquisicao: str | None = None  # COMPRADO ou DOADO
+    tipo_convenio: str | None = None  # PM ou BOMBEIROS
+    nome_locador: str | None = None
+    valor_locacao: float | None = None
     
     # 4.2.3 ADMINISTRATIVA
     secretaria_id: int | None = None
@@ -122,8 +127,21 @@ class VeiculoBase(BaseModel):
     # 4.2.5 DOCUMENTAÇÃO
     vencimento_licenciamento: date | None = None
     vencimento_seguro: date | None = None
+    vencimento_ipva: date | None = None
     
-    # 4.2.6 LOCALIZAÇÃO
+    # 4.2.6 DADOS TÉCNICOS
+    cilindrada: int | None = None
+    potencia: int | None = None
+    transmissao: str | None = None
+    tracao: str | None = None
+    vidros_eletricos: bool = False
+    direcao: str | None = None
+    ar_condicionado: bool = False
+    pneu_dimensao: str | None = None
+    pneu_velocidade: str | None = None
+    pneu_carga: str | None = None
+    
+    # 4.2.7 LOCALIZAÇÃO
     uf: str = "SP"
     municipio: str = ""
 
@@ -154,6 +172,12 @@ class VeiculoUpdate(BaseModel):
     prefixo: str | None = None
     tipo_frota_id: int | None = None
     categoria_id: int | None = None
+    numero_patrimonio: str | None = None
+    valor_aquisicao: float | None = None
+    tipo_aquisicao: str | None = None
+    tipo_convenio: str | None = None
+    nome_locador: str | None = None
+    valor_locacao: float | None = None
     
     # 4.2.3 ADMINISTRATIVA
     secretaria_id: int | None = None
@@ -172,8 +196,21 @@ class VeiculoUpdate(BaseModel):
     # 4.2.5 DOCUMENTAÇÃO
     vencimento_licenciamento: date | None = None
     vencimento_seguro: date | None = None
+    vencimento_ipva: date | None = None
     
-    # 4.2.6 LOCALIZAÇÃO
+    # 4.2.6 DADOS TÉCNICOS
+    cilindrada: int | None = None
+    potencia: int | None = None
+    transmissao: str | None = None
+    tracao: str | None = None
+    vidros_eletricos: bool | None = None
+    direcao: str | None = None
+    ar_condicionado: bool | None = None
+    pneu_dimensao: str | None = None
+    pneu_velocidade: str | None = None
+    pneu_carga: str | None = None
+    
+    # 4.2.7 LOCALIZAÇÃO
     uf: str | None = None
     municipio: str | None = None
 

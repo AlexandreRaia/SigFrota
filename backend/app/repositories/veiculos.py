@@ -35,7 +35,7 @@ class VeiculoRepository(BaseRepository[Veiculo]):
             .options(
                 selectinload(Veiculo.marca),
                 selectinload(Veiculo.modelo),
-                selectinload(Veiculo.tipo_veiculo),
+                selectinload(Veiculo.tipo_registro),
                 selectinload(Veiculo.tipo_frota_ref),
                 selectinload(Veiculo.categoria),
                 selectinload(Veiculo.unidade),
@@ -51,7 +51,7 @@ class VeiculoRepository(BaseRepository[Veiculo]):
         stmt = select(Veiculo).options(
             selectinload(Veiculo.marca),
             selectinload(Veiculo.modelo),
-            selectinload(Veiculo.tipo_veiculo),
+            selectinload(Veiculo.tipo_registro),
             selectinload(Veiculo.categoria),
         ).offset(skip).limit(limit).order_by(Veiculo.placa)
         

@@ -97,8 +97,11 @@ export interface TipoVeiculo {
 // ── Situação e Combustível ────────────────────────────────────────────────────
 
 export type SituacaoVeiculo = 'ATIVA' | 'INATIVA' | 'MANUTENCAO'
+export type StatusVeiculo = 'ATIVO' | 'INATIVO' | 'BAIXADO' | 'LEILOADO'
+
 export type TipoControle = 'QUILOMETRAGEM' | 'HORIMETRO'
 export type Combustivel = 'GASOLINA' | 'DIESEL' | 'FLEX' | 'ELETRICO' | 'GNV'
+export type TipoVeiculoNome = 'AUTOMOVEL' | 'UTILITARIO' | 'CAMIONETE' | 'CAMIONETA' | 'MICRO_ONIBUS' | 'ONIBUS' | 'MOTOCICLETA' | 'CAMINHAO' | 'CAMINHAO_BASCULANTE' | 'CAMINHAO_PIPA' | 'CAMINHAO_VARREDOR' | 'RETROESCAVADEIRA' | 'PA_CARREGADEIRA' | 'TRATOR_AGRICOLA' | 'AMBULANCIA' | 'VIATURA_GUARDA_MUNICIPAL' | 'ONIBUS_ESCOLAR' | 'VAN'
 
 // ── Veículos ───────────────────────────────────────────────────────────────────
 
@@ -122,10 +125,18 @@ export interface Veiculo extends VeiculoListItem {
   cor: string
   motorizacao: string
   observacoes: string
+  status: StatusVeiculo
+  tipo_veiculo_nome: TipoVeiculoNome
   
   // 4.2.2 CLASSIFICAÇÃO
   tipo_frota_id?: number | null
   categoria_id?: number | null
+  numero_patrimonio: string | null
+  valor_aquisicao: number | null
+  tipo_aquisicao: 'COMPRADO' | 'DOADO' | null
+  tipo_convenio: 'PM' | 'BOMBEIROS' | null
+  nome_locador: string | null
+  valor_locacao: number | null
   
   // 4.2.3 ADMINISTRATIVA
   secretaria_id: number | null
@@ -145,11 +156,24 @@ export interface Veiculo extends VeiculoListItem {
   capacidade_passageiros: number | null
   capacidade_carga: number | null
   
-  // 4.2.5 DOCUMENTAÇÃO
+  // 4.2.5 DADOS TÉCNICOS
+  cilindrada: number | null
+  potencia: number | null
+  transmissao: string | null
+  tracao: string | null
+  vidros_eletricos: boolean | null
+  direcao: string | null
+  ar_condicionado: boolean | null
+  pneu_dimensao: string | null
+  pneu_velocidade: string | null
+  pneu_carga: string | null
+  
+  // 4.2.6 DOCUMENTAÇÃO
   vencimento_licenciamento: string | null
   vencimento_seguro: string | null
+  vencimento_ipva: string | null
   
-  // 4.2.6 LOCALIZAÇÃO
+  // 4.2.7 LOCALIZAÇÃO
   uf: string
   municipio: string
   

@@ -29,7 +29,7 @@ export default function Dashboard() {
 
   const totalVeiculos = veiculos?.length ?? 0
   const emManutencao = veiculos?.filter((v) => v.situacao === 'MANUTENCAO').length ?? 0
-  const disponiveis = veiculos?.filter((v) => v.situacao === 'ATIVA').length ?? 0
+  const disponiveis = veiculos?.filter((v) => v.situacao === 'ATIVO').length ?? 0
 
   return (
     <div className="space-y-6">

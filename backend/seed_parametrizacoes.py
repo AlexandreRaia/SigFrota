@@ -42,7 +42,6 @@ def seed_database():
             ('Próprio', True),
             ('Locado', True),
             ('Convênio', True),
-            ('Cedido', True),
         ]
         
         for nome, ativo in tipos_frota_data:

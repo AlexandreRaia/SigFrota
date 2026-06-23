@@ -1,0 +1,21 @@
+DB: C:\Users\25755\Documents\Projetos\SigFrota\backend\sigfrota_dev.db
+Colunas atuais (33): ['ano_fabricacao', 'ano_modelo', 'atualizado_em', 'capacidade_carga', 'capacidade_passageiros', 'capacidade_tanque', 'categoria_id', 'centro_custo_id', 'chassi', 'combustivel', 'cor', 'criado_em', 'hodometro_horimetro_inicial', 'id', 'marca_id', 'modelo_id', 'motorizacao', 'municipio', 'numero_patrimonio', 'observacoes', 'placa', 'prefixo', 'renavam', 'secretaria_id', 'situacao', 'subunidade_id', 'tipo_controle', 'tipo_frota_id', 'tipo_registro_id', 'uf', 'unidade_id', 'vencimento_licenciamento', 'vencimento_seguro']
+Faltando no banco (16): ['ar_condicionado', 'cilindrada', 'direcao', 'nome_locador', 'pneu_carga', 'pneu_dimensao', 'pneu_velocidade', 'potencia', 'tipo_aquisicao', 'tipo_convenio', 'tracao', 'transmissao', 'valor_aquisicao', 'valor_locacao', 'vencimento_ipva', 'vidros_eletricos']
+Extras no banco (0): []
+  ✅ Adicionado: tipo_convenio VARCHAR(20)
+  ✅ Adicionado: vencimento_ipva DATE
+  ✅ Adicionado: cilindrada INTEGER
+  ✅ Adicionado: potencia INTEGER
+  ✅ Adicionado: transmissao VARCHAR(20)
+  ✅ Adicionado: tracao VARCHAR(10)
+  ✅ Adicionado: vidros_eletricos BOOLEAN NOT NULL DEFAULT 0
+  ✅ Adicionado: direcao VARCHAR(20)
+  ✅ Adicionado: ar_condicionado BOOLEAN NOT NULL DEFAULT 0
+  ✅ Adicionado: pneu_dimensao VARCHAR(20)
+  ✅ Adicionado: pneu_velocidade VARCHAR(5)
+  ✅ Adicionado: pneu_carga VARCHAR(5)
+
+Colunas finais (45): ['ano_fabricacao', 'ano_modelo', 'ar_condicionado', 'atualizado_em', 'capacidade_carga', 'capacidade_passageiros', 'capacidade_tanque', 'categoria_id', 'centro_custo_id', 'chassi', 'cilindrada', 'combustivel', 'cor', 'criado_em', 'direcao', 'hodometro_horimetro_inicial', 'id', 'marca_id', 'modelo_id', 'motorizacao', 'municipio', 'numero_patrimonio', 'observacoes', 'placa', 'pneu_carga', 'pneu_dimensao', 'pneu_velocidade', 'potencia', 'prefixo', 'renavam', 'secretaria_id', 'situacao', 'subunidade_id', 'tipo_controle', 'tipo_convenio', 'tipo_frota_id', 'tipo_registro_id', 'tracao', 'transmissao', 'uf', 'unidade_id', 'vencimento_ipva', 'vencimento_licenciamento', 'vencimento_seguro', 'vidros_eletricos']
+
+Adicionadas: 12 colunas
+Erros: 0

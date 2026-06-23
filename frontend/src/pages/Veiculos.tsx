@@ -5,14 +5,83 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { veiculoService } from '@/services/veiculos'
 import { Button } from '@/components/ui/Button'
 import type { Veiculo, VeiculoListItem } from '@/types'
+import { FiEye, FiEdit2, FiPower } from 'react-icons/fi'
 
 const TABS = [
-  { id: 'gerais', label: '📋 Dados Gerais' },
-  { id: 'classificacao', label: '🏷️ Classificação' },
-  { id: 'administrativa', label: '🏢 Administrativa' },
-  { id: 'operacional', label: '⚙️ Operacional' },
-  { id: 'documentacao', label: '📄 Documentação' },
+  { id: 'gerais', label: 'Dados Gerais' },
+  { id: 'classificacao', label: 'Frota' },
+  { id: 'tecnico', label: 'Dados Técnicos' },
+  { id: 'administrativa', label: 'Administrativa' },
+  { id: 'operacional', label: 'Operacional' },
+  { id: 'documentacao', label: 'Documentação' },
 ]
+
+// Funções de máscara
+const formatPlaca = (value: string): string => {
+  const cleaned = value.toUpperCase().replace(/[^A-Z0-9]/g, '')
+  if (cleaned.length === 0) return ''
+  
+  // Detecta Mercosul (AA-9-AA-9999) ou antigo (AAA-9999)
+  if (cleaned.length >= 4) {
+    if (/^[A-Z]{2}\d[A-Z]{2}\d{4}$/.test(cleaned) || cleaned.length >= 8) {
+      // Mercosul: AA-9-AA-9999
+      const match = cleaned.match(/^([A-Z]{2})(\d)([A-Z]{2})(\d{4})/)
+      if (match) return `${match[1]}-${match[2]}-${match[3]}-${match[4]}`.slice(0, 12)
+    } else {
+      // Antigo: AAA-9999
+      const match = cleaned.match(/^([A-Z]{3})(\d{4})/)
+      if (match) return `${match[1]}-${match[2]}`.slice(0, 8)
+    }
+  }
+  return cleaned.slice(0, 8)
+}
+
+const formatRenavam = (value: string): string => {
+  return value.replace(/\D/g, '').slice(0, 11)
+}
+
+const formatChassi = (value: string): string => {
+  return value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17)
+}
+
+// ── Estilos globais ──────────────────────────────────────────────────────────
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style')
+  style.textContent = `
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  `
+  document.head.appendChild(style)
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+const InfoRow = ({
+  label,
+  value,
+  mono = false,
+}: {
+  label: string
+  value: string | number | null | undefined
+  mono?: boolean
+}) => (
+  <div className="flex justify-between items-baseline gap-2 py-1.5 border-b border-gray-50 last:border-0">
+    <span className="text-xs text-gray-500 font-medium shrink-0">{label}</span>
+    <span className={`text-sm text-gray-800 text-right truncate ${mono ? 'font-mono text-xs' : ''}`}>
+      {value != null && value !== '' ? String(value) : <span className="text-gray-300">—</span>}
+    </span>
+  </div>
+)
+
+const fmtDate = (v: string | null | undefined) =>
+  v ? new Date(v).toLocaleDateString('pt-BR') : null
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export default function Veiculos() {
   const [q, setQ] = useState('')
@@ -22,16 +91,14 @@ export default function Veiculos() {
   const [editing, setEditing] = useState<Veiculo | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [showDetail, setShowDetail] = useState(false)
+  const [detailVeiculo, setDetailVeiculo] = useState<Veiculo | null>(null)
+  const [loadingDetail, setLoadingDetail] = useState(false)
 
   // Queries
   const { data: veiculos, isLoading } = useQuery({
     queryKey: ['veiculos', { q, situacao }],
     queryFn: () => veiculoService.listar({ q, situacao }),
-  })
-
-  const { data: categorias } = useQuery({
-    queryKey: ['veiculos', 'categorias'],
-    queryFn: () => veiculoService.categorias(),
   })
 
   const { data: tiposFrota } = useQuery({
@@ -51,10 +118,12 @@ export default function Veiculos() {
     renavam: '',
     ano_fabricacao: new Date().getFullYear(),
     combustivel: 'FLEX',
+    tipo_registro_id: 1,  // Veículo por padrão
     uf: 'SP',
-    situacao: 'ATIVA',
+    situacao: 'ATIVO',
     tipo_controle: 'QUILOMETRAGEM',
     hodometro_horimetro_inicial: 0,
+    tipo_convenio: null,
   })
 
   const [marcaId, setMarcaId] = useState<number | null>(null)
@@ -110,6 +179,14 @@ export default function Veiculos() {
     },
   })
 
+  const toggleStatusMutation = useMutation<Veiculo, Error, VeiculoListItem>({
+    mutationFn: (v) => {
+      const ativo = v.situacao === 'ATIVO' || (v.situacao as string) === 'ATIVA'
+      return ativo ? veiculoService.inativar(v.id) : veiculoService.ativar(v.id)
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['veiculos'] }),
+  })
+
   function openCreate() {
     setEditing(null)
     setForm({
@@ -119,10 +196,25 @@ export default function Veiculos() {
       renavam: '',
       ano_fabricacao: new Date().getFullYear(),
       combustivel: 'FLEX',
+      tipo_registro_id: 1,  // Veículo por padrão
       uf: 'SP',
-      situacao: 'ATIVA',
+      situacao: 'ATIVO',
       tipo_controle: 'QUILOMETRAGEM',
       hodometro_horimetro_inicial: 0,
+      tipo_convenio: null,
+      // Dados Técnicos
+      cilindrada: undefined,
+      potencia: undefined,
+      transmissao: '',
+      tracao: '',
+      vidros_eletricos: false,
+      direcao: '',
+      ar_condicionado: false,
+      pneu_dimensao: '',
+      pneu_velocidade: '',
+      pneu_carga: '',
+      // Documentação
+      vencimento_ipva: undefined,
     })
     setMarcaId(null)
     setActiveTab('gerais')
@@ -166,6 +258,10 @@ export default function Veiculos() {
       setFormError('Modelo é obrigatório')
       return
     }
+    if (!form.tipo_registro_id) {
+      setFormError('Tipo de Registro é obrigatório')
+      return
+    }
 
     try {
       // Preparar dados para envio
@@ -190,6 +286,18 @@ export default function Veiculos() {
       await deleteMutation.mutateAsync(id)
     } catch (err: any) {
       setFormError(err?.response?.data?.detail || 'Erro ao excluir')
+    }
+  }
+
+  async function handleView(v: VeiculoListItem) {
+    setLoadingDetail(true)
+    setDetailVeiculo(null)
+    setShowDetail(true)
+    try {
+      const full = await veiculoService.detalhe(v.id)
+      setDetailVeiculo(full)
+    } finally {
+      setLoadingDetail(false)
     }
   }
 
@@ -218,8 +326,8 @@ export default function Veiculos() {
           onChange={(e) => setSituacao(e.target.value)}
         >
           <option value="">Todas as situações</option>
-          <option value="ATIVA">Ativa</option>
-          <option value="INATIVA">Inativa</option>
+          <option value="ATIVO">Ativa</option>
+          <option value="INATIVO">Inativa</option>
           <option value="MANUTENCAO">Manutenção</option>
         </select>
       </div>
@@ -232,7 +340,6 @@ export default function Veiculos() {
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Placa</th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Marca / Modelo</th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Ano</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Categoria</th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Combustível</th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Situação</th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Ações</th>
@@ -241,11 +348,11 @@ export default function Veiculos() {
           <tbody className="divide-y divide-gray-100">
             {isLoading ? (
               <tr>
-                <td colSpan={7} className="px-6 py-10 text-center text-gray-400">Carregando...</td>
+                <td colSpan={6} className="px-6 py-10 text-center text-gray-400">Carregando...</td>
               </tr>
             ) : veiculos?.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-10 text-center text-gray-400">Nenhum veículo encontrado</td>
+                <td colSpan={6} className="px-6 py-10 text-center text-gray-400">Nenhum veículo encontrado</td>
               </tr>
             ) : (
               veiculos?.map((v) => (
@@ -253,20 +360,45 @@ export default function Veiculos() {
                   <td className="px-6 py-3 font-mono font-bold text-gray-900">{v.placa}</td>
                   <td className="px-6 py-3 text-gray-600">{v.marca?.nome} {v.modelo?.nome}</td>
                   <td className="px-6 py-3 text-gray-600">{v.ano_fabricacao}</td>
-                  <td className="px-6 py-3 text-gray-600">{v.categoria?.nome || '—'}</td>
                   <td className="px-6 py-3 text-gray-600">{v.combustivel}</td>
                   <td className="px-6 py-3">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${v.situacao === 'ATIVA' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${v.situacao === 'ATIVO' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                       {v.situacao}
                     </span>
                   </td>
-                  <td className="px-6 py-3 text-sm space-x-2">
-                    <button onClick={() => openEdit(v)} className="text-blue-600 hover:text-blue-900 font-medium">
-                      Editar
-                    </button>
-                    <button onClick={() => handleDelete(v.id)} className="text-red-600 hover:text-red-900 font-medium">
-                      Excluir
-                    </button>
+                  <td className="px-6 py-3">
+                    <div className="flex items-center gap-0.5">
+                      <button
+                        title="Ver detalhes"
+                        onClick={() => handleView(v)}
+                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      >
+                        <FiEye size={16} />
+                      </button>
+                      <button
+                        title="Editar"
+                        onClick={() => openEdit(v)}
+                        className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                      >
+                        <FiEdit2 size={16} />
+                      </button>
+                      <button
+                        title={
+                          v.situacao === 'ATIVO' || (v.situacao as string) === 'ATIVA'
+                            ? 'Inativar veículo'
+                            : 'Ativar veículo'
+                        }
+                        onClick={() => toggleStatusMutation.mutate(v)}
+                        disabled={toggleStatusMutation.isPending}
+                        className={`p-2 rounded-lg transition-colors disabled:opacity-40 ${
+                          v.situacao === 'ATIVO' || (v.situacao as string) === 'ATIVA'
+                            ? 'text-green-500 hover:text-red-600 hover:bg-red-50'
+                            : 'text-gray-400 hover:text-green-600 hover:bg-green-50'
+                        }`}
+                      >
+                        <FiPower size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -310,7 +442,7 @@ export default function Veiculos() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-4 py-3 whitespace-nowrap border-b-2 transition-colors ${
+                  className={`flex items-center gap-2 px-4 py-3 whitespace-nowrap border-b-2 transition-colors ${
                     activeTab === tab.id
                       ? 'border-blue-600 text-blue-600 font-medium'
                       : 'border-transparent text-gray-600 hover:text-gray-900'
@@ -328,46 +460,75 @@ export default function Veiculos() {
                 <div className="bg-white rounded-lg p-6 space-y-4">
                   <h3 className="font-bold text-lg mb-4">Informações do Veículo</h3>
                   <div className="grid grid-cols-2 gap-4">
+                    {/* Tipo de Registro e Status lado a lado */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Tipo de Registro *</label>
+                      <div className="flex gap-4">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="tipo_registro"
+                            value="1"
+                            checked={form.tipo_registro_id === 1}
+                            onChange={(e) => setForm({ ...form, tipo_registro_id: parseInt(e.target.value) })}
+                            className="w-4 h-4 cursor-pointer"
+                          />
+                          <span className="text-sm font-medium">🚗 Veículo</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="tipo_registro"
+                            value="2"
+                            checked={form.tipo_registro_id === 2}
+                            onChange={(e) => setForm({ ...form, tipo_registro_id: parseInt(e.target.value) })}
+                            className="w-4 h-4 cursor-pointer"
+                          />
+                          <span className="text-sm font-medium">⚙️ Máquina</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Placa e Tipo de Veículo */}
                     <div>
                       <label className="block text-sm font-medium mb-1">Placa *</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.placa || ''}
-                        onChange={(e) => setForm({ ...form, placa: e.target.value.toUpperCase() })}
-                        placeholder="ABC-1234"
+                        onChange={(e) => setForm({ ...form, placa: formatPlaca(e.target.value) })}
+                        placeholder="ABC-1234 ou AB-1-CD-1234"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Prefixo *</label>
-                      <input
-                        type="text"
+                      <label className="block text-sm font-medium mb-1">Tipo de Veículo</label>
+                      <select
                         className="w-full px-3 py-2 border rounded-lg"
-                        value={form.prefixo || ''}
-                        onChange={(e) => setForm({ ...form, prefixo: e.target.value })}
-                        placeholder="V-001"
-                      />
+                        value={form.tipo_veiculo_nome || 'AUTOMOVEL'}
+                        onChange={(e) => setForm({ ...form, tipo_veiculo_nome: e.target.value as any })}
+                      >
+                        <option value="AUTOMOVEL">Automóvel</option>
+                        <option value="UTILITARIO">Utilitário</option>
+                        <option value="CAMIONETE">Camionete</option>
+                        <option value="CAMIONETA">Camioneta</option>
+                        <option value="MICRO_ONIBUS">Micro-ônibus</option>
+                        <option value="ONIBUS">Ônibus</option>
+                        <option value="MOTOCICLETA">Motocicleta</option>
+                        <option value="CAMINHAO">Caminhão</option>
+                        <option value="CAMINHAO_BASCULANTE">Caminhão Basculante</option>
+                        <option value="CAMINHAO_PIPA">Caminhão Pipa</option>
+                        <option value="CAMINHAO_VARREDOR">Caminhão Varredor</option>
+                        <option value="RETROESCAVADEIRA">Retroescavadeira</option>
+                        <option value="PA_CARREGADEIRA">Pá Carregadeira</option>
+                        <option value="TRATOR_AGRICOLA">Trator Agrícola</option>
+                        <option value="AMBULANCIA">Ambulância</option>
+                        <option value="VIATURA_GUARDA_MUNICIPAL">Viatura da Guarda Municipal</option>
+                        <option value="ONIBUS_ESCOLAR">Ônibus Escolar</option>
+                        <option value="VAN">Van</option>
+                      </select>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Chassi *</label>
-                      <input
-                        type="text"
-                        className="w-full px-3 py-2 border rounded-lg"
-                        value={form.chassi || ''}
-                        onChange={(e) => setForm({ ...form, chassi: e.target.value.toUpperCase() })}
-                        placeholder="17 caracteres"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">RENAVAM *</label>
-                      <input
-                        type="text"
-                        className="w-full px-3 py-2 border rounded-lg"
-                        value={form.renavam || ''}
-                        onChange={(e) => setForm({ ...form, renavam: e.target.value.replace(/\D/g, '') })}
-                        placeholder="11 dígitos"
-                      />
-                    </div>
+
+                    {/* Marca e Modelo */}
                     <div>
                       <label className="block text-sm font-medium mb-1">Marca *</label>
                       <select
@@ -399,6 +560,8 @@ export default function Veiculos() {
                         ))}
                       </select>
                     </div>
+
+                    {/* Ano Fabricação e Ano Modelo */}
                     <div>
                       <label className="block text-sm font-medium mb-1">Ano Fabricação *</label>
                       <input
@@ -417,6 +580,8 @@ export default function Veiculos() {
                         onChange={(e) => setForm({ ...form, ano_modelo: e.target.value ? parseInt(e.target.value) : undefined })}
                       />
                     </div>
+
+                    {/* Cor e Combustível */}
                     <div>
                       <label className="block text-sm font-medium mb-1">Cor</label>
                       <input
@@ -441,6 +606,32 @@ export default function Veiculos() {
                         <option value="GNV">GNV</option>
                       </select>
                     </div>
+
+                    {/* RENAVAM e Chassi */}
+                    <div>
+                      <label className="block text-sm font-medium mb-1">RENAVAM *</label>
+                      <input
+                        type="text"
+                        className="w-full px-3 py-2 border rounded-lg"
+                        value={form.renavam || ''}
+                        onChange={(e) => setForm({ ...form, renavam: formatRenavam(e.target.value) })}
+                        placeholder="11 dígitos"
+                        maxLength={11}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Chassi *</label>
+                      <input
+                        type="text"
+                        className="w-full px-3 py-2 border rounded-lg"
+                        value={form.chassi || ''}
+                        onChange={(e) => setForm({ ...form, chassi: formatChassi(e.target.value) })}
+                        placeholder="17 caracteres"
+                        maxLength={17}
+                      />
+                    </div>
+
+                    {/* Observações - full width */}
                     <div className="col-span-2">
                       <label className="block text-sm font-medium mb-1">Observações</label>
                       <textarea
@@ -455,36 +646,241 @@ export default function Veiculos() {
                 </div>
               )}
 
-              {/* 🏷️ Classificação */}
+              {/* 🚗 Frota */}
               {activeTab === 'classificacao' && (
                 <div className="bg-white rounded-lg p-6 space-y-4">
-                  <h3 className="font-bold text-lg mb-4">Classificação do Veículo</h3>
+                  <h3 className="font-bold text-lg mb-4">Dados da Frota</h3>
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Categoria</label>
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium mb-1">Tipo de Frota *</label>
                       <select
-                        className="w-full px-3 py-2 border rounded-lg"
-                        value={form.categoria_id || ''}
-                        onChange={(e) => setForm({ ...form, categoria_id: e.target.value ? parseInt(e.target.value) : undefined })}
-                      >
-                        <option value="">Selecione...</option>
-                        {categorias?.map((c) => (
-                          <option key={c.id} value={c.id}>{c.nome}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Tipo Frota</label>
-                      <select
-                        className="w-full px-3 py-2 border rounded-lg"
+                        className="w-full px-3 py-2 border rounded-lg font-semibold"
                         value={form.tipo_frota_id || ''}
                         onChange={(e) => setForm({ ...form, tipo_frota_id: e.target.value ? parseInt(e.target.value) : undefined })}
                       >
                         <option value="">Selecione...</option>
-                        {tiposFrota?.map((t) => (
+                        {tiposFrota?.filter(t => t.nome !== 'CEDIDO').map((t) => (
                           <option key={t.id} value={t.id}>{t.nome}</option>
                         ))}
                       </select>
+                    </div>
+
+                    {/* Prefixo - Comum a todos */}
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium mb-1">Prefixo</label>
+                      <input
+                        type="text"
+                        className="w-full px-3 py-2 border rounded-lg"
+                        value={form.prefixo || ''}
+                        onChange={(e) => setForm({ ...form, prefixo: e.target.value })}
+                        placeholder="V-001"
+                      />
+                    </div>
+
+                    {/* Campos para Patrimônio (Próprio e Estadual) */}
+                    {form.tipo_frota_id && ['1', '4'].includes(String(form.tipo_frota_id)) && (
+                      <>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Número Patrimônio</label>
+                          <input
+                            type="text"
+                            className="w-full px-3 py-2 border rounded-lg"
+                            value={form.numero_patrimonio || ''}
+                            onChange={(e) => setForm({ ...form, numero_patrimonio: e.target.value })}
+                            placeholder="Ex: PAT-2024-001"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Valor de Aquisição (R$)</label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            className="w-full px-3 py-2 border rounded-lg"
+                            value={form.valor_aquisicao || ''}
+                            onChange={(e) => setForm({ ...form, valor_aquisicao: e.target.value ? parseFloat(e.target.value) : undefined })}
+                            placeholder="0.00"
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <label className="block text-sm font-medium mb-1">Tipo de Aquisição</label>
+                          <select
+                            className="w-full px-3 py-2 border rounded-lg"
+                            value={form.tipo_aquisicao || ''}
+                            onChange={(e) => setForm({ ...form, tipo_aquisicao: e.target.value as any })}
+                          >
+                            <option value="">Selecione...</option>
+                            <option value="COMPRADO">💳 Comprado</option>
+                            <option value="DOADO">🎁 Doado</option>
+                          </select>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Campos para Convênio (PM, Bombeiros) */}
+                    {form.tipo_frota_id && String(form.tipo_frota_id) === '3' && (
+                      <div className="col-span-2">
+                        <label className="block text-sm font-medium mb-1">Tipo de Convênio</label>
+                        <select
+                          className="w-full px-3 py-2 border rounded-lg"
+                          value={form.tipo_convenio || ''}
+                          onChange={(e) => setForm({ ...form, tipo_convenio: e.target.value as any })}
+                        >
+                          <option value="">Selecione...</option>
+                          <option value="PM">🚔 PM</option>
+                          <option value="BOMBEIROS">🚒 Bombeiros</option>
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Campos para Locado */}
+                    {form.tipo_frota_id && String(form.tipo_frota_id) === '2' && (
+                      <>
+                        <div className="col-span-2">
+                          <label className="block text-sm font-medium mb-1">Nome da Locadora</label>
+                          <input
+                            type="text"
+                            className="w-full px-3 py-2 border rounded-lg"
+                            value={form.nome_locador || ''}
+                            onChange={(e) => setForm({ ...form, nome_locador: e.target.value })}
+                            placeholder="Ex: Empresa Locadora XYZ"
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <label className="block text-sm font-medium mb-1">Valor Locação (R$/mês)</label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            className="w-full px-3 py-2 border rounded-lg"
+                            value={form.valor_locacao || ''}
+                            onChange={(e) => setForm({ ...form, valor_locacao: e.target.value ? parseFloat(e.target.value) : undefined })}
+                            placeholder="0.00"
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* 🔧 Dados Técnicos */}
+              {activeTab === 'tecnico' && (
+                <div className="bg-white rounded-lg p-6 space-y-4">
+                  <h3 className="font-bold text-lg mb-4">Dados Técnicos</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Cilindrada (cc)</label>
+                      <input
+                        type="number"
+                        className="w-full px-3 py-2 border rounded-lg"
+                        value={form.cilindrada || ''}
+                        onChange={(e) => setForm({ ...form, cilindrada: e.target.value ? parseInt(e.target.value) : undefined })}
+                        placeholder="Ex: 1600"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Potência (cv)</label>
+                      <input
+                        type="number"
+                        className="w-full px-3 py-2 border rounded-lg"
+                        value={form.potencia || ''}
+                        onChange={(e) => setForm({ ...form, potencia: e.target.value ? parseInt(e.target.value) : undefined })}
+                        placeholder="Ex: 110"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Transmissão</label>
+                      <select
+                        className="w-full px-3 py-2 border rounded-lg"
+                        value={form.transmissao || ''}
+                        onChange={(e) => setForm({ ...form, transmissao: e.target.value })}
+                      >
+                        <option value="">Selecione...</option>
+                        <option value="MANUAL">Manual</option>
+                        <option value="AUTOMATICA">Automática</option>
+                        <option value="CVT">CVT</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Tração</label>
+                      <select
+                        className="w-full px-3 py-2 border rounded-lg"
+                        value={form.tracao || ''}
+                        onChange={(e) => setForm({ ...form, tracao: e.target.value })}
+                      >
+                        <option value="">Selecione...</option>
+                        <option value="2WD">2WD</option>
+                        <option value="4WD">4WD</option>
+                        <option value="FWD">FWD</option>
+                        <option value="RWD">RWD</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Direção</label>
+                      <select
+                        className="w-full px-3 py-2 border rounded-lg"
+                        value={form.direcao || ''}
+                        onChange={(e) => setForm({ ...form, direcao: e.target.value })}
+                      >
+                        <option value="">Selecione...</option>
+                        <option value="MANUAL">Manual</option>
+                        <option value="HIDRAULICA">Hidráulica</option>
+                        <option value="ELETRICA">Elétrica</option>
+                      </select>
+                    </div>
+                    <div className="col-span-2">
+                      <div className="flex items-center gap-4">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={form.vidros_eletricos || false}
+                            onChange={(e) => setForm({ ...form, vidros_eletricos: e.target.checked })}
+                            className="w-4 h-4 cursor-pointer"
+                          />
+                          <span className="text-sm">Vidros Elétricos</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={form.ar_condicionado || false}
+                            onChange={(e) => setForm({ ...form, ar_condicionado: e.target.checked })}
+                            className="w-4 h-4 cursor-pointer"
+                          />
+                          <span className="text-sm">Ar Condicionado</span>
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-span-2 border-t pt-4">
+                      <h4 className="font-semibold text-sm mb-3">Dados do Pneu</h4>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Dimensões (Ex: 195/65R15)</label>
+                      <input
+                        type="text"
+                        className="w-full px-3 py-2 border rounded-lg"
+                        value={form.pneu_dimensao || ''}
+                        onChange={(e) => setForm({ ...form, pneu_dimensao: e.target.value })}
+                        placeholder="195/65R15"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Índice de Velocidade</label>
+                      <input
+                        type="text"
+                        className="w-full px-3 py-2 border rounded-lg"
+                        value={form.pneu_velocidade || ''}
+                        onChange={(e) => setForm({ ...form, pneu_velocidade: e.target.value })}
+                        placeholder="Ex: H, V, W"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Índice de Carga</label>
+                      <input
+                        type="text"
+                        className="w-full px-3 py-2 border rounded-lg"
+                        value={form.pneu_carga || ''}
+                        onChange={(e) => setForm({ ...form, pneu_carga: e.target.value })}
+                        placeholder="Ex: 91, 92, 93"
+                      />
                     </div>
                   </div>
                 </div>
@@ -495,16 +891,6 @@ export default function Veiculos() {
                 <div className="bg-white rounded-lg p-6 space-y-4">
                   <h3 className="font-bold text-lg mb-4">Dados Administrativos</h3>
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Secretaria</label>
-                      <select
-                        className="w-full px-3 py-2 border rounded-lg"
-                        disabled
-                      >
-                        <option value="">Padrão</option>
-                      </select>
-                      <p className="text-xs text-gray-500 mt-1">Vinculado ao usuário</p>
-                    </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Unidade</label>
                       <select
@@ -549,26 +935,6 @@ export default function Veiculos() {
                         ))}
                       </select>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Estado (UF)</label>
-                      <input
-                        type="text"
-                        className="w-full px-3 py-2 border rounded-lg"
-                        value={form.uf || 'SP'}
-                        onChange={(e) => setForm({ ...form, uf: e.target.value.toUpperCase() })}
-                        maxLength={2}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Município</label>
-                      <input
-                        type="text"
-                        className="w-full px-3 py-2 border rounded-lg"
-                        value={form.municipio || ''}
-                        onChange={(e) => setForm({ ...form, municipio: e.target.value })}
-                        placeholder="Ex: São Paulo"
-                      />
-                    </div>
                   </div>
                 </div>
               )}
@@ -578,6 +944,46 @@ export default function Veiculos() {
                 <div className="bg-white rounded-lg p-6 space-y-4">
                   <h3 className="font-bold text-lg mb-4">Dados Operacionais</h3>
                   <div className="grid grid-cols-2 gap-4">
+                    {/* Status Operacional - TOP */}
+                    <div className="col-span-2 mb-4 pb-4 border-b">
+                      <h4 className="font-bold text-base mb-4">Situação do Veículo</h4>
+                      <div className="flex gap-6">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="situacao"
+                            value="ATIVO"
+                            checked={form.situacao === 'ATIVO'}
+                            onChange={(e) => setForm({ ...form, situacao: e.target.value })}
+                            className="w-4 h-4 cursor-pointer"
+                          />
+                          <span className="text-sm">Ativa</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="situacao"
+                            value="INATIVO"
+                            checked={form.situacao === 'INATIVO'}
+                            onChange={(e) => setForm({ ...form, situacao: e.target.value })}
+                            className="w-4 h-4 cursor-pointer"
+                          />
+                          <span className="text-sm">Inativa</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="situacao"
+                            value="MANUTENCAO"
+                            checked={form.situacao === 'MANUTENCAO'}
+                            onChange={(e) => setForm({ ...form, situacao: e.target.value })}
+                            className="w-4 h-4 cursor-pointer"
+                          />
+                          <span className="text-sm">Manutenção</span>
+                        </label>
+                      </div>
+                    </div>
+
                     <div>
                       <label className="block text-sm font-medium mb-1">Tipo Controle</label>
                       <select
@@ -625,32 +1031,85 @@ export default function Veiculos() {
                         onChange={(e) => setForm({ ...form, capacidade_carga: e.target.value ? parseInt(e.target.value) : undefined })}
                       />
                     </div>
+
                   </div>
                 </div>
               )}
 
               {/* 📄 Documentação */}
               {activeTab === 'documentacao' && (
-                <div className="bg-white rounded-lg p-6 space-y-4">
-                  <h3 className="font-bold text-lg mb-4">Documentação</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Vencimento Licenciamento</label>
-                      <input
-                        type="date"
-                        className="w-full px-3 py-2 border rounded-lg"
-                        value={form.vencimento_licenciamento ? String(form.vencimento_licenciamento).split('T')[0] : ''}
-                        onChange={(e) => setForm({ ...form, vencimento_licenciamento: e.target.value as any })}
-                      />
+                <div className="bg-white rounded-lg p-6 space-y-6">
+                  <div>
+                    <h3 className="font-bold text-lg mb-4">Documentação</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Vencimento Licenciamento</label>
+                        <input
+                          type="date"
+                          className="w-full px-3 py-2 border rounded-lg"
+                          value={form.vencimento_licenciamento ? String(form.vencimento_licenciamento).split('T')[0] : ''}
+                          onChange={(e) => setForm({ ...form, vencimento_licenciamento: e.target.value as any })}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Vencimento Seguro</label>
+                        <input
+                          type="date"
+                          className="w-full px-3 py-2 border rounded-lg"
+                          value={form.vencimento_seguro ? String(form.vencimento_seguro).split('T')[0] : ''}
+                          onChange={(e) => setForm({ ...form, vencimento_seguro: e.target.value as any })}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Vencimento IPVA</label>
+                        <input
+                          type="date"
+                          className="w-full px-3 py-2 border rounded-lg"
+                          value={form.vencimento_ipva ? String(form.vencimento_ipva).split('T')[0] : ''}
+                          onChange={(e) => setForm({ ...form, vencimento_ipva: e.target.value as any })}
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Vencimento Seguro</label>
-                      <input
-                        type="date"
-                        className="w-full px-3 py-2 border rounded-lg"
-                        value={form.vencimento_seguro ? String(form.vencimento_seguro).split('T')[0] : ''}
-                        onChange={(e) => setForm({ ...form, vencimento_seguro: e.target.value as any })}
-                      />
+                  </div>
+
+                  {/* Seção de Arquivos */}
+                  <div className="border-t pt-6">
+                    <h4 className="font-bold text-base mb-4">Arquivos Anexados</h4>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Tipo de Documento</label>
+                          <select className="w-full px-3 py-2 border rounded-lg text-sm">
+                            <option value="">Selecione...</option>
+                            <option value="FOTO_VEICULO">Foto do Veículo</option>
+                            <option value="CRLV">CRLV</option>
+                            <option value="NF_COMPRA">NF de Compra</option>
+                            <option value="APOL_SEGURO">Apólice de Seguro</option>
+                            <option value="MANUTENCAO">Registro de Manutenção</option>
+                            <option value="INSPECAO">Inspecção Técnica</option>
+                            <option value="OUTRO">Outro</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Arquivo</label>
+                          <input
+                            type="file"
+                            className="w-full px-3 py-2 border rounded-lg text-sm"
+                            accept="image/*,.pdf"
+                          />
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+                      >
+                        ➕ Adicionar Arquivo
+                      </button>
+
+                      {/* Lista de Arquivos (vazia por enquanto) */}
+                      <div className="mt-4">
+                        <p className="text-sm text-gray-500 italic">Nenhum arquivo anexado ainda.</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -676,6 +1135,233 @@ export default function Veiculos() {
           </div>
         </div>
       )}
+
+      {/* ── Modal de Detalhes ─────────────────────────────────────────── */}
+      {showDetail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] flex flex-col overflow-hidden">
+
+            {/* Hero Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-3 text-white shrink-0 relative">
+              {!loadingDetail && detailVeiculo && (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-baseline gap-3">
+                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold border ${
+                      detailVeiculo.situacao === 'ATIVO' || (detailVeiculo.situacao as string) === 'ATIVA'
+                        ? 'bg-green-500/20 text-green-100 border-green-400/40'
+                        : 'bg-red-500/20 text-red-100 border-red-400/40'
+                    }`}>
+                      {detailVeiculo.situacao}
+                    </span>
+                    <h2 className="text-4xl font-bold font-mono tracking-wide">
+                      {detailVeiculo.placa}
+                    </h2>
+                    <p className="text-blue-100 text-sm">
+                      {detailVeiculo.marca?.nome} {detailVeiculo.modelo?.nome} · {detailVeiculo.ano_fabricacao}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowDetail(false)}
+                    className="text-white hover:text-gray-200 text-2xl leading-none transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
+              {loadingDetail && (
+                <div className="flex items-center gap-2 text-blue-100">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                  <span className="text-sm">Carregando...</span>
+                </div>
+              )}
+            </div>
+
+            {/* Body: Foto + Info */}
+            <div className="flex-1 overflow-y-auto bg-gray-50 scrollbar-hide">
+              {loadingDetail ? (
+                <div className="flex flex-col items-center justify-center h-96 text-gray-400 gap-3">
+                  <div className="animate-spin rounded-full h-9 w-9 border-b-2 border-blue-600" />
+                  <p className="text-sm">Carregando dados...</p>
+                </div>
+              ) : detailVeiculo ? (
+                <>
+                  {/* Grid: Foto + Quick Stats + Tabs + Cards */}
+                  <div className="p-6 space-y-4">
+
+                    {/* Foto + Quick Stats + Tabs em uma linha */}
+                    <div className="grid grid-cols-3 gap-4">
+                      {/* Foto (col-span-1) */}
+                      <div className="col-span-1 flex flex-col gap-4">
+                        {/* Placeholder de foto */}
+                        <div className="bg-white rounded-xl border-2 border-gray-200 h-40 flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="text-4xl mb-2">🚗</div>
+                            <p className="text-xs text-gray-400">Foto</p>
+                          </div>
+                        </div>
+
+                        {/* Quick Stats abaixo */}
+                        <div className="grid grid-cols-2 gap-2">
+                          {[
+                            { label: 'PREFIXO', value: detailVeiculo.prefixo || '—' },
+                            { label: 'COMBUSTÍVEL', value: detailVeiculo.combustivel },
+                            { label: 'TIPO', value: (detailVeiculo.tipo_veiculo_nome ?? '—').replace(/_/g, ' ').slice(0, 15) },
+                            { label: 'CATEGORIA', value: detailVeiculo.categoria?.nome?.slice(0, 12) || '—' },
+                          ].map(({ label, value }) => (
+                            <div key={label} className="bg-white rounded-lg p-3 border border-gray-100">
+                              <p className="text-gray-500 text-xs font-bold tracking-wide">{label}</p>
+                              <p className="text-gray-900 font-bold text-sm mt-1 truncate">{value}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Info Panels (col-span-2) */}
+                      <div className="col-span-2 space-y-3">
+                        {/* Tabs */}
+                        <div className="flex gap-2 border-b border-gray-200 overflow-x-auto">
+                          {[
+                            { id: 'ident', label: 'Identificação' },
+                            { id: 'frota', label: 'Frota' },
+                            { id: 'tecnico', label: 'Dados Técnicos' },
+                            { id: 'admin', label: 'Administrativo' },
+                          ].map((tab) => (
+                            <button
+                              key={tab.id}
+                              onClick={() => setActiveTab(tab.id)}
+                              className={`px-4 py-2 text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
+                                activeTab === tab.id
+                                  ? 'border-blue-600 text-blue-600'
+                                  : 'border-transparent text-gray-600 hover:text-gray-900'
+                              }`}
+                            >
+                              {tab.label}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Tab Content */}
+                        <div className="bg-white rounded-lg p-4 space-y-2 max-h-64 overflow-y-auto border border-gray-100">
+                          {activeTab === 'ident' && (
+                            <>
+                              <InfoRow label="RENAVAM" value={detailVeiculo.renavam} mono />
+                              <InfoRow label="Chassi" value={detailVeiculo.chassi} mono />
+                              <InfoRow label="Cor" value={detailVeiculo.cor} />
+                              <InfoRow label="Motorização" value={detailVeiculo.motorizacao} />
+                              <InfoRow label="UF" value={detailVeiculo.uf} />
+                              <InfoRow label="Município" value={detailVeiculo.municipio} />
+                            </>
+                          )}
+
+                          {activeTab === 'frota' && (
+                            <>
+                              <InfoRow label="Tipo de Frota" value={tiposFrota?.find(t => t.id === detailVeiculo.tipo_frota_id)?.nome} />
+                              <InfoRow label="Nº Patrimônio" value={detailVeiculo.numero_patrimonio} />
+                              <InfoRow label="Tipo Aquisição" value={detailVeiculo.tipo_aquisicao} />
+                              <InfoRow
+                                label="Valor Aquisição"
+                                value={detailVeiculo.valor_aquisicao != null
+                                  ? `R$ ${detailVeiculo.valor_aquisicao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                                  : null}
+                              />
+                              <InfoRow label="Locadora" value={detailVeiculo.nome_locador} />
+                              <InfoRow
+                                label="Valor Locação"
+                                value={detailVeiculo.valor_locacao != null
+                                  ? `R$ ${detailVeiculo.valor_locacao.toFixed(2)}/mês`
+                                  : null}
+                              />
+                            </>
+                          )}
+
+                          {activeTab === 'tecnico' && (
+                            <>
+                              <InfoRow label="Cilindrada" value={detailVeiculo.cilindrada ? `${detailVeiculo.cilindrada} cc` : null} />
+                              <InfoRow label="Potência" value={detailVeiculo.potencia ? `${detailVeiculo.potencia} cv` : null} />
+                              <InfoRow label="Transmissão" value={detailVeiculo.transmissao} />
+                              <InfoRow label="Tração" value={detailVeiculo.tracao} />
+                              <InfoRow label="Direção" value={detailVeiculo.direcao} />
+                              <InfoRow label="Vidros Elétricos" value={detailVeiculo.vidros_eletricos != null ? (detailVeiculo.vidros_eletricos ? 'Sim' : 'Não') : null} />
+                              <InfoRow label="Ar Condicionado" value={detailVeiculo.ar_condicionado != null ? (detailVeiculo.ar_condicionado ? 'Sim' : 'Não') : null} />
+                              {detailVeiculo.pneu_dimensao && (
+                                <InfoRow
+                                  label="Pneu"
+                                  value={[detailVeiculo.pneu_dimensao, detailVeiculo.pneu_velocidade, detailVeiculo.pneu_carga].filter(Boolean).join(' · ')}
+                                />
+                              )}
+                            </>
+                          )}
+
+                          {activeTab === 'admin' && (
+                            <>
+                              <InfoRow label="Unidade" value={detailVeiculo.unidade?.nome} />
+                              <InfoRow label="Subunidade" value={detailVeiculo.subunidade?.nome} />
+                              <InfoRow
+                                label="Centro de Custo"
+                                value={detailVeiculo.centro_custo
+                                  ? `${detailVeiculo.centro_custo.codigo} — ${detailVeiculo.centro_custo.descricao}`
+                                  : null}
+                              />
+                              <InfoRow label="Tipo de Controle" value={detailVeiculo.tipo_controle} />
+                              <InfoRow label="Cap. Tanque" value={detailVeiculo.capacidade_tanque ? `${detailVeiculo.capacidade_tanque} L` : null} />
+                              <InfoRow label="Cap. Passageiros" value={detailVeiculo.capacidade_passageiros} />
+                              <InfoRow label="Cap. Carga" value={detailVeiculo.capacidade_carga ? `${detailVeiculo.capacidade_carga} kg` : null} />
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Observações (full width) */}
+                    {detailVeiculo.observacoes && (
+                      <div className="bg-white rounded-lg p-4 border border-gray-100">
+                        <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Observações</h4>
+                        <p className="text-sm text-gray-600 leading-relaxed">{detailVeiculo.observacoes}</p>
+                      </div>
+                    )}
+
+                    {/* Documentação (full width) */}
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        { label: 'IPVA', value: fmtDate(detailVeiculo.vencimento_ipva) },
+                        { label: 'LICENCIAMENTO', value: fmtDate(detailVeiculo.vencimento_licenciamento) },
+                        { label: 'SEGURO', value: fmtDate(detailVeiculo.vencimento_seguro) },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="bg-white rounded-lg p-4 border border-gray-100">
+                          <p className="text-gray-500 text-xs font-bold tracking-wide">{label}</p>
+                          <p className="text-gray-900 font-bold text-sm mt-1">{value || '—'}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                  </div>
+                </>
+              ) : null}
+            </div>
+
+            {/* Footer */}
+            <div className="border-t px-6 py-4 flex justify-end gap-3 bg-white shrink-0">
+              {detailVeiculo && (
+                <button
+                  onClick={() => { setShowDetail(false); openEdit(detailVeiculo) }}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors"
+                >
+                  <FiEdit2 size={14} />
+                  Editar
+                </button>
+              )}
+              <button
+                onClick={() => setShowDetail(false)}
+                className="px-4 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium transition-colors"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
