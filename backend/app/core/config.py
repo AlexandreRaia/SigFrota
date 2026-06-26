@@ -1,9 +1,28 @@
+import os
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Literal
 
-# Caminho absoluto para o .env na raiz do pacote backend/
 _ENV_FILE = Path(__file__).resolve().parent.parent.parent / ".env"
+
+
+def _get_asyncpg_url() -> str:
+    pg_host = os.environ.get("PGHOST")
+    pg_port = os.environ.get("PGPORT", "5432")
+    pg_user = os.environ.get("PGUSER")
+    pg_password = os.environ.get("PGPASSWORD")
+    pg_database = os.environ.get("PGDATABASE")
+    if pg_host and pg_user and pg_password and pg_database:
+        return f"postgresql+asyncpg://{pg_user}:{pg_password}@{pg_host}:{pg_port}/{pg_database}"
+    return "postgresql+asyncpg://sigfrota:sigfrota_dev@localhost:5432/sigfrota"
+
+
+def _get_allowed_origins() -> str:
+    replit_domain = os.environ.get("REPLIT_DEV_DOMAIN", "")
+    origins = ["http://localhost:5000", "http://localhost:5173", "http://localhost:3000"]
+    if replit_domain:
+        origins.append(f"https://{replit_domain}")
+    return ",".join(origins)
 
 
 class Settings(BaseSettings):
@@ -14,27 +33,27 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    # Application
     APP_NAME: str = "SigFrota API"
     APP_VERSION: str = "2.0.0"
     ENVIRONMENT: Literal["development", "staging", "production"] = "development"
     DEBUG: bool = True
 
-    # Database
-    DATABASE_URL: str = "postgresql+asyncpg://sigfrota:sigfrota_dev@localhost:5432/sigfrota"
+    # Use ASYNCPG_DATABASE_URL to avoid pydantic-settings auto-reading DATABASE_URL
+    ASYNCPG_DATABASE_URL: str = _get_asyncpg_url()
 
-    # Security
     SECRET_KEY: str = "dev-secret-key-troque-em-producao"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
-    # CORS — use string no .env: "http://localhost:5173,http://localhost:3000"
-    ALLOWED_ORIGINS_STR: str = "http://localhost:5173,http://localhost:3000"
+    ALLOWED_ORIGINS_STR: str = _get_allowed_origins()
 
-    # Media
     MEDIA_DIR: str = "media"
     MAX_UPLOAD_SIZE_MB: int = 10
+
+    @property
+    def DATABASE_URL(self) -> str:
+        return self.ASYNCPG_DATABASE_URL
 
     @property
     def ALLOWED_ORIGINS(self) -> list[str]:
