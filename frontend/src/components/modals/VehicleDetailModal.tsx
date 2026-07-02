@@ -103,7 +103,7 @@ export default function VehicleDetailModal({
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       {/* Modal Background: Branco limpo */}
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-7xl overflow-hidden flex flex-col" style={{ backgroundColor: '#FFFFFF', height: '92vh' }}>
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col" style={{ backgroundColor: '#FFFFFF', height: '92vh' }}>
         
         {/* ===== HEADER PRINCIPAL ===== */}
         <div className="border-b border-gray-200 px-6 py-4 bg-white">
@@ -118,7 +118,6 @@ export default function VehicleDetailModal({
                 <ArrowLeft size={22} style={{ color: '#6B7280' }} />
               </button>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#6B7280' }}>Placa</p>
                 <h2 className="text-2xl font-bold font-mono mt-0.5" style={{ color: '#111827' }}>{editedVehicle.placa}</h2>
               </div>
             </div>
@@ -129,8 +128,7 @@ export default function VehicleDetailModal({
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: '#FFFFFF' }}>
                 <Shield size={18} style={{ color: '#6B7280' }} />
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold" style={{ color: '#6B7280' }}>MARCA</p>
-                  <p className="text-sm font-medium truncate" style={{ color: '#111827' }}>{editedVehicle.marca?.nome || '—'}</p>
+                  <p className="text-sm font-semibold truncate" style={{ color: '#111827' }}>{editedVehicle.marca?.nome || '—'}</p>
                 </div>
               </div>
 
@@ -138,8 +136,7 @@ export default function VehicleDetailModal({
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: '#FFFFFF' }}>
                 <Car size={18} style={{ color: '#6B7280' }} />
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold" style={{ color: '#6B7280' }}>MODELO</p>
-                  <p className="text-sm font-medium truncate" style={{ color: '#111827' }}>{editedVehicle.modelo?.nome || '—'}</p>
+                  <p className="text-sm font-semibold truncate" style={{ color: '#111827' }}>{editedVehicle.modelo?.nome || '—'}</p>
                 </div>
               </div>
 
@@ -147,8 +144,7 @@ export default function VehicleDetailModal({
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: '#FFFFFF' }}>
                 <Fuel size={18} style={{ color: '#6B7280' }} />
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold" style={{ color: '#6B7280' }}>COMBUSTÍVEL</p>
-                  <p className="text-sm font-medium truncate" style={{ color: '#111827' }}>{editedVehicle.combustivel || '—'}</p>
+                  <p className="text-sm font-semibold truncate" style={{ color: '#111827' }}>{editedVehicle.combustivel || '—'}</p>
                 </div>
               </div>
 
@@ -156,8 +152,7 @@ export default function VehicleDetailModal({
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: '#FFFFFF' }}>
                 <Calendar size={18} style={{ color: '#6B7280' }} />
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold" style={{ color: '#6B7280' }}>ANO</p>
-                  <p className="text-sm font-medium" style={{ color: '#111827' }}>{editedVehicle.ano_fabricacao || '—'}</p>
+                  <p className="text-sm font-semibold" style={{ color: '#111827' }}>{editedVehicle.ano_fabricacao || '—'}</p>
                 </div>
               </div>
             </div>
