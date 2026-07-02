@@ -300,6 +300,20 @@ export default function VehicleDetailModal({
                     </div>
                     <span className="text-xs font-semibold" style={{ color: '#111827' }}>{editedVehicle.combustivel || '—'}</span>
                   </div>
+                  <div className="flex items-center justify-between py-1.5 px-1">
+                    <div className="flex items-center gap-1.5">
+                      <Circle size={12} style={{ color: '#6B7280' }} />
+                      <span className="text-xs" style={{ color: '#6B7280' }}>Cor</span>
+                    </div>
+                    <span className="text-xs font-semibold" style={{ color: '#111827' }}>{editedVehicle.cor || '—'}</span>
+                  </div>
+                  <div className="flex items-center justify-between py-1.5 px-1">
+                    <div className="flex items-center gap-1.5">
+                      <Wrench size={12} style={{ color: '#6B7280' }} />
+                      <span className="text-xs" style={{ color: '#6B7280' }}>Motorização</span>
+                    </div>
+                    <span className="text-xs font-semibold" style={{ color: '#111827' }}>{editedVehicle.motorizacao || '—'}</span>
+                  </div>
                 </div>
               </div>
             </div>
