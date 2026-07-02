@@ -11,6 +11,8 @@ import {
 } from 'react-icons/fi'
 import { HiOutlineTruck } from 'react-icons/hi'
 import { BsCarFront } from 'react-icons/bs'
+import { useVehicleModal } from '@/hooks/useVehicleModal'
+import VehicleDetailModal from '@/components/modals/VehicleDetailModal'
 
 // ── masks ─────────────────────────────────────────────────────────────────────
 
@@ -198,6 +200,9 @@ export default function Veiculos() {
   const [detailV,      setDetailV]      = useState<Veiculo | null>(null)
   const [activeTab,    setActiveTab]    = useState('gerais')
   const [viewTab,      setViewTab]      = useState('ident')
+
+  // modal unificado
+  const { isOpen: isUnifiedModalOpen, vehicle: unifiedModalVehicle, openModal: openUnifiedModal, closeModal: closeUnifiedModal } = useVehicleModal()
 
   // form
   const [form,       setForm]      = useState<Partial<Veiculo>>(emptyForm())
@@ -435,6 +440,13 @@ export default function Veiculos() {
                 <td className="px-5 py-3.5"><TableBadge situacao={v.situacao} /></td>
                 <td className="px-5 py-3.5">
                   <div className="flex items-center gap-0.5 justify-end">
+                    <button
+                      title="Ver detalhes (novo modal)"
+                      onClick={() => openUnifiedModal(v)}
+                      className="p-2 text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                    >
+                      👁️
+                    </button>
                     <button
                       title="Ver / Editar"
                       onClick={() => openView(v)}
@@ -983,6 +995,22 @@ export default function Veiculos() {
           )}
 
         </div>
+      )}
+
+      {/* Modal unificado */}
+      {unifiedModalVehicle && (
+        <VehicleDetailModal
+          vehicle={unifiedModalVehicle}
+          isOpen={isUnifiedModalOpen}
+          onClose={closeUnifiedModal}
+          onSave={async (updatedVehicle) => {
+            try {
+              await updateMut.mutateAsync({ id: updatedVehicle.id, data: updatedVehicle })
+            } catch (error) {
+              console.error('Erro ao salvar:', error)
+            }
+          }}
+        />
       )}
 
     </div>

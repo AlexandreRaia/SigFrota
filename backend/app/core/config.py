@@ -7,6 +7,12 @@ _ENV_FILE = Path(__file__).resolve().parent.parent.parent / ".env"
 
 
 def _get_asyncpg_url() -> str:
+    # Use SQLite for development if no PostgreSQL config
+    use_sqlite = os.environ.get("USE_SQLITE", "true").lower() == "true"
+    if use_sqlite:
+        db_path = os.environ.get("SQLITE_DB_PATH", "sigfrota.db")
+        return f"sqlite+aiosqlite:///{db_path}"
+    
     pg_host = os.environ.get("PGHOST")
     pg_port = os.environ.get("PGPORT", "5432")
     pg_user = os.environ.get("PGUSER")
