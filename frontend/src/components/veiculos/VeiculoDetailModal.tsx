@@ -209,7 +209,7 @@ export function VeiculoDetailModal({ isOpen, onClose, veiculo, loading, tiposFro
                           <InfoRow
                             label="Centro de Custo"
                             value={veiculo.centro_custo
-                              ? `${veiculo.centro_custo.codigo} — ${veiculo.centro_custo.descricao}`
+                              ? `${veiculo.centro_custo.codigo} — ${veiculo.centro_custo.nome}`
                               : null}
                           />
                           <InfoRow label="Tipo de Controle" value={veiculo.tipo_controle} />

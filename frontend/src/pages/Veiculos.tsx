@@ -590,7 +590,7 @@ export default function Veiculos() {
                           <FieldCard icon={<FiMapPin size={15} />}       label="Subunidade"       value={detailV.subunidade?.nome} />
                           <FieldCard icon={<FiBriefcase size={15} />}    label="Centro de Custo"
                             value={detailV.centro_custo
-                              ? `${detailV.centro_custo.codigo} — ${detailV.centro_custo.descricao}`
+                              ? `${detailV.centro_custo.codigo} — ${detailV.centro_custo.nome}`
                               : null}
                           />
                         </div>
@@ -914,7 +914,7 @@ export default function Veiculos() {
                             onChange={(e) => setForm({ ...form, centro_custo_id: parseInt(e.target.value) || undefined })}>
                             <option value="">Selecione...</option>
                             {centrosCusto?.map(c => (
-                              <option key={c.id} value={c.id}>{c.codigo} — {c.descricao}</option>
+                              <option key={c.id} value={c.id}>{c.codigo} — {c.nome}</option>
                             ))}
                           </select></div>
                       </div>
