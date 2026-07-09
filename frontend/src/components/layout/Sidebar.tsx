@@ -8,7 +8,7 @@ const navItems = [
   { path: '/condutores', label: 'Condutores', icon: <FaUser /> },
   { path: '/manutencao', label: 'Manutenção', icon: <FaWrench /> },
   { path: '/multas', label: 'Multas', icon: <FaFileAlt /> },
-  { path: '/parametrizacoes', label: 'Unidades', icon: <FaBuilding /> },
+  { path: '/parametrizacoes', label: 'Parâmetros', icon: <FaBuilding /> },
 ]
 
 type Props = {

@@ -153,10 +153,6 @@ export default function Parametrizacoes() {
       {/* Cabeçalho */}
       <div>
         <h1 className="text-xl font-bold text-slate-800">🏢 Parametrizações</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Cadastros de apoio do sistema. A <strong>Unidade</strong> representa uma Secretaria (ex: Secretaria de Administração / SMA)
-          e o <strong>Setor/Departamento</strong> pertence a uma Unidade (ex: Departamento de Transportes).
-        </p>
       </div>
 
       {/* Abas */}
