@@ -138,7 +138,9 @@ async def atualizar_veiculo(veiculo_id: int, data: VeiculoUpdate, db: DatabaseDe
 async def ativar_veiculo(veiculo_id: int, db: DatabaseDep):
     """Ativar um veículo (mudar situação para ATIVA)."""
     repo = VeiculoRepository(db)
-    veiculo = await repo.get_or_404(veiculo_id)
+    veiculo = await repo.get_by_id(veiculo_id)
+    if not veiculo:
+        raise HTTPException(status_code=404, detail="Veículo não encontrado")
     await repo.update(veiculo, {"situacao": "ATIVA"})
     return await repo.get_com_relacoes(veiculo_id)
 
@@ -147,7 +149,9 @@ async def ativar_veiculo(veiculo_id: int, db: DatabaseDep):
 async def inativar_veiculo(veiculo_id: int, db: DatabaseDep):
     """Inativar um veículo (mudar situação para INATIVA)."""
     repo = VeiculoRepository(db)
-    veiculo = await repo.get_or_404(veiculo_id)
+    veiculo = await repo.get_by_id(veiculo_id)
+    if not veiculo:
+        raise HTTPException(status_code=404, detail="Veículo não encontrado")
     await repo.update(veiculo, {"situacao": "INATIVA"})
     return await repo.get_com_relacoes(veiculo_id)
 
@@ -156,6 +160,8 @@ async def inativar_veiculo(veiculo_id: int, db: DatabaseDep):
 async def excluir_veiculo(veiculo_id: int, db: DatabaseDep):
     """Excluir um veículo."""
     repo = VeiculoRepository(db)
-    veiculo = await repo.get_or_404(veiculo_id)
+    veiculo = await repo.get_by_id(veiculo_id)
+    if not veiculo:
+        raise HTTPException(status_code=404, detail="Veículo não encontrado")
     await repo.delete(veiculo)
     return MessageResponse(message="Veículo excluído com sucesso")

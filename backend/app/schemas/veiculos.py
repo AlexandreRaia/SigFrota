@@ -26,20 +26,52 @@ class UnidadeResponse(BaseModel):
     """Unidade administrativa."""
     id: int
     nome: str
+    sigla: str = ""
     secretaria_id: int | None = None
     ativa: bool
 
     model_config = {"from_attributes": True}
 
 
+class UnidadeCreate(BaseModel):
+    """Dados para criar uma unidade (equivale a uma Secretaria)."""
+    nome: str = Field(min_length=1, max_length=120)
+    sigla: str = Field(default="", max_length=20)
+    secretaria_id: int | None = None
+
+
+class UnidadeUpdate(BaseModel):
+    """Dados para atualizar uma unidade (campos opcionais)."""
+    nome: str | None = Field(default=None, min_length=1, max_length=120)
+    secretaria_id: int | None = None
+    sigla: str | None = Field(default=None, max_length=20)
+    ativa: bool | None = None
+
+
 class SubunidadeResponse(BaseModel):
     """Subunidade administrativa."""
     id: int
     nome: str
+    sigla: str = ""
     unidade_id: int | None = None
     ativa: bool
 
     model_config = {"from_attributes": True}
+
+
+class SubunidadeCreate(BaseModel):
+    """Dados para criar uma subunidade."""
+    nome: str = Field(min_length=1, max_length=120)
+    unidade_id: int
+    sigla: str = Field(default="", max_length=20)
+
+
+class SubunidadeUpdate(BaseModel):
+    """Dados para atualizar uma subunidade (campos opcionais)."""
+    nome: str | None = Field(default=None, min_length=1, max_length=120)
+    unidade_id: int | None = None
+    sigla: str | None = Field(default=None, max_length=20)
+    ativa: bool | None = None
 
 
 class CentroCustoResponse(BaseModel):
@@ -50,6 +82,19 @@ class CentroCustoResponse(BaseModel):
     ativa: bool
 
     model_config = {"from_attributes": True}
+
+
+class CentroCustoCreate(BaseModel):
+    """Dados para criar um centro de custo."""
+    codigo: str = Field(min_length=1, max_length=20)
+    nome: str = Field(min_length=1, max_length=120)
+
+
+class CentroCustoUpdate(BaseModel):
+    """Dados para atualizar um centro de custo (campos opcionais)."""
+    codigo: str | None = Field(default=None, min_length=1, max_length=20)
+    nome: str | None = Field(default=None, min_length=1, max_length=120)
+    ativa: bool | None = None
 
 
 # ── Marca e Modelo ──────────────────────────────────────────────────────────
@@ -97,7 +142,7 @@ class VeiculoBase(BaseModel):
     combustivel: str = Field(default="FLEX", description="Tipo de combustível")
     motorizacao: str = ""
     observacoes: str = ""
-    situacao: str = "ATIVO"
+    situacao: str = "ATIVA"
     
     # 4.2.2 CLASSIFICAÇÃO
     prefixo: str = Field(..., description="Prefixo identificador único")
@@ -243,5 +288,6 @@ class VeiculoListItem(BaseModel):
     situacao: str
     categoria: CategoriaResponse | None = None
     combustivel: str
+    unidade: UnidadeResponse | None = None
 
     model_config = {"from_attributes": True}

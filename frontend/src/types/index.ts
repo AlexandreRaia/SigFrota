@@ -54,6 +54,7 @@ export interface TipoFrota {
 export interface Unidade {
   id: number
   nome: string
+  sigla?: string
   secretaria_id: number | null
   ativa: boolean
 }
@@ -61,6 +62,7 @@ export interface Unidade {
 export interface Subunidade {
   id: number
   nome: string
+  sigla?: string
   unidade_id: number | null
   ativa: boolean
 }
@@ -68,8 +70,8 @@ export interface Subunidade {
 export interface CentroCusto {
   id: number
   codigo: string
-  descricao: string
-  ativo: boolean
+  nome: string
+  ativa: boolean
 }
 
 // ── Marca, Modelo, TipoVeiculo ────────────────────────────────────────────────
@@ -115,6 +117,7 @@ export interface VeiculoListItem {
   situacao: SituacaoVeiculo
   categoria: Categoria | null
   combustivel: Combustivel
+  unidade: Unidade | null
 }
 
 export interface Veiculo extends VeiculoListItem {

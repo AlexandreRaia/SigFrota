@@ -37,11 +37,11 @@ class TipoFrota(Base):
 
 
 class Unidade(Base):
-    """Unidades administrativas dentro de uma Secretaria."""
+    """Unidades administrativas (equivalem a uma Secretaria)."""
     __tablename__ = "unidades"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    secretaria_id: Mapped[int] = mapped_column(ForeignKey("secretarias.id"))
+    secretaria_id: Mapped[int | None] = mapped_column(ForeignKey("secretarias.id"), nullable=True)
     nome: Mapped[str] = mapped_column(String(120))
     sigla: Mapped[str] = mapped_column(String(20), default="")
     ativa: Mapped[bool] = mapped_column(Boolean, default=True)

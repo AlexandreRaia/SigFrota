@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { FaTachometerAlt, FaCar, FaUser, FaWrench, FaFileAlt } from 'react-icons/fa'
+import { FaTachometerAlt, FaCar, FaUser, FaWrench, FaFileAlt, FaBuilding } from 'react-icons/fa'
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: <FaTachometerAlt /> },
@@ -8,6 +8,7 @@ const navItems = [
   { path: '/condutores', label: 'Condutores', icon: <FaUser /> },
   { path: '/manutencao', label: 'Manutenção', icon: <FaWrench /> },
   { path: '/multas', label: 'Multas', icon: <FaFileAlt /> },
+  { path: '/parametrizacoes', label: 'Unidades', icon: <FaBuilding /> },
 ]
 
 type Props = {

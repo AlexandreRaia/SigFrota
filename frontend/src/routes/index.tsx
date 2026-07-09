@@ -7,6 +7,7 @@ import Veiculos from '@/pages/Veiculos'
 import Condutores from '@/pages/Condutores'
 import Manutencao from '@/pages/Manutencao'
 import Multas from '@/pages/Multas'
+import Parametrizacoes from '@/pages/Parametrizacoes'
 import NotFound from '@/pages/NotFound'
 
 export function AppRoutes() {
@@ -22,6 +23,7 @@ export function AppRoutes() {
           <Route path="/condutores/*" element={<Condutores />} />
           <Route path="/manutencao/*" element={<Manutencao />} />
           <Route path="/multas/*" element={<Multas />} />
+          <Route path="/parametrizacoes/*" element={<Parametrizacoes />} />
         </Route>
       </Route>
 

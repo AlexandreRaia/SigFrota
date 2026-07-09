@@ -75,6 +75,7 @@ class VeiculoRepository(BaseRepository[Veiculo]):
             selectinload(Veiculo.marca),
             selectinload(Veiculo.modelo),
             selectinload(Veiculo.categoria),
+            selectinload(Veiculo.unidade),
         )
         
         filters = []
