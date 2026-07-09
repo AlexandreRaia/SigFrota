@@ -55,8 +55,8 @@ const InfoRow = ({
   mono?: boolean
 }) => (
   <div className="flex justify-between items-baseline gap-2 py-1.5 border-b border-gray-50 last:border-0">
-    <span className="text-sm text-gray-500 font-medium shrink-0">{label}</span>
-    <span className={`text-sm text-gray-800 text-right truncate ${mono ? 'font-mono' : ''}`}>
+    <span className="text-xs font-normal text-slate-500 shrink-0">{label}</span>
+    <span className={`text-sm font-medium text-slate-800 text-right truncate ${mono ? 'font-mono' : ''}`}>
       {value != null && value !== '' ? String(value) : <span className="text-gray-300">—</span>}
     </span>
   </div>
@@ -409,13 +409,13 @@ export default function Veiculos() {
         <table className="w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Placa</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Marca / Modelo</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Ano</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Combustível</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Unidade</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Situação</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Ações</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Placa</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Marca / Modelo</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Ano</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Combustível</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Unidade</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Situação</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -492,7 +492,7 @@ export default function Veiculos() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden">
             {/* Header */}
             <div className="border-b px-6 py-4 flex justify-between items-center shrink-0">
-              <h2 className="text-lg font-semibold text-gray-800">{editing ? '✏️ Editar Veículo' : '➕ Novo Veículo'}</h2>
+              <h2 className="text-lg font-semibold text-slate-800">{editing ? '✏️ Editar Veículo' : '➕ Novo Veículo'}</h2>
               <button
                 onClick={() => setShowForm(false)}
                 className="text-gray-500 hover:text-gray-700 text-2xl"
@@ -537,11 +537,11 @@ export default function Veiculos() {
               {/* 📋 Dados Gerais */}
               {activeTab === 'gerais' && (
                 <div className="bg-white rounded-lg p-6 space-y-4">
-                  <h3 className="text-base font-semibold text-gray-800 mb-4">Informações do Veículo</h3>
+                  <h3 className="text-sm font-semibold text-slate-700 mb-4">Informações do Veículo</h3>
                   <div className="grid grid-cols-2 gap-4">
                     {/* Tipo de Registro e Status lado a lado */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-2">Tipo de Registro *</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-2">Tipo de Registro *</label>
                       <div className="flex gap-4">
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
@@ -570,7 +570,7 @@ export default function Veiculos() {
 
                     {/* Situação */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Situação</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Situação</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.situacao || 'ATIVA'}
@@ -584,7 +584,7 @@ export default function Veiculos() {
 
                     {/* Placa e Tipo de Veículo */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Placa *</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Placa *</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -594,7 +594,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Prefixo</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Prefixo</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -604,7 +604,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Tipo de Veículo</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Tipo de Veículo</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.tipo_veiculo_nome || 'AUTOMOVEL'}
@@ -631,7 +631,7 @@ export default function Veiculos() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Categoria *</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Categoria *</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.categoria_id || ''}
@@ -646,7 +646,7 @@ export default function Veiculos() {
 
                     {/* Marca e Modelo */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Marca *</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Marca *</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={marcaId || ''}
@@ -663,7 +663,7 @@ export default function Veiculos() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Modelo *</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Modelo *</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.modelo_id || ''}
@@ -679,7 +679,7 @@ export default function Veiculos() {
 
                     {/* Ano Fabricação e Ano Modelo */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Ano Fabricação *</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Ano Fabricação *</label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -688,7 +688,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Ano Modelo</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Ano Modelo</label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -699,7 +699,7 @@ export default function Veiculos() {
 
                     {/* Cor e Combustível */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Cor</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Cor</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -709,7 +709,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Combustível</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Combustível</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.combustivel || ''}
@@ -733,7 +733,7 @@ export default function Veiculos() {
 
                     {/* RENAVAM e Chassi */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">RENAVAM *</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">RENAVAM *</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -744,7 +744,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Chassi *</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Chassi *</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -757,7 +757,7 @@ export default function Veiculos() {
 
                     {/* Observações - full width */}
                     <div className="col-span-2">
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Observações</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Observações</label>
                       <textarea
                         className="w-full px-3 py-2 border rounded-lg"
                         rows={2}
@@ -773,10 +773,10 @@ export default function Veiculos() {
               {/* 🚗 Frota */}
               {activeTab === 'classificacao' && (
                 <div className="bg-white rounded-lg p-6 space-y-4">
-                  <h3 className="text-base font-semibold text-gray-800 mb-4">Dados da Frota</h3>
+                  <h3 className="text-sm font-semibold text-slate-700 mb-4">Dados da Frota</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="col-span-2">
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Tipo de Frota *</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Tipo de Frota *</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg font-semibold"
                         value={form.tipo_frota_id || ''}
@@ -793,7 +793,7 @@ export default function Veiculos() {
                     {form.tipo_frota_id && ['1', '4'].includes(String(form.tipo_frota_id)) && (
                       <>
                         <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Número Patrimônio</label>
+                          <label className="block text-xs font-normal text-slate-500 mb-1">Número Patrimônio</label>
                           <input
                             type="text"
                             className="w-full px-3 py-2 border rounded-lg"
@@ -803,7 +803,7 @@ export default function Veiculos() {
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Valor de Aquisição (R$)</label>
+                          <label className="block text-xs font-normal text-slate-500 mb-1">Valor de Aquisição (R$)</label>
                           <input
                             type="number"
                             step="0.01"
@@ -814,7 +814,7 @@ export default function Veiculos() {
                           />
                         </div>
                         <div className="col-span-2">
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Tipo de Aquisição</label>
+                          <label className="block text-xs font-normal text-slate-500 mb-1">Tipo de Aquisição</label>
                           <select
                             className="w-full px-3 py-2 border rounded-lg"
                             value={form.tipo_aquisicao || ''}
@@ -831,7 +831,7 @@ export default function Veiculos() {
                     {/* Campos para Convênio (PM, Bombeiros) */}
                     {form.tipo_frota_id && String(form.tipo_frota_id) === '3' && (
                       <div className="col-span-2">
-                        <label className="block text-xs font-medium text-gray-600 mb-1">Tipo de Convênio</label>
+                        <label className="block text-xs font-normal text-slate-500 mb-1">Tipo de Convênio</label>
                         <select
                           className="w-full px-3 py-2 border rounded-lg"
                           value={form.tipo_convenio || ''}
@@ -848,7 +848,7 @@ export default function Veiculos() {
                     {form.tipo_frota_id && String(form.tipo_frota_id) === '2' && (
                       <>
                         <div className="col-span-2">
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Nome da Locadora</label>
+                          <label className="block text-xs font-normal text-slate-500 mb-1">Nome da Locadora</label>
                           <input
                             type="text"
                             className="w-full px-3 py-2 border rounded-lg"
@@ -858,7 +858,7 @@ export default function Veiculos() {
                           />
                         </div>
                         <div className="col-span-2">
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Valor Locação (R$/mês)</label>
+                          <label className="block text-xs font-normal text-slate-500 mb-1">Valor Locação (R$/mês)</label>
                           <input
                             type="number"
                             step="0.01"
@@ -873,10 +873,10 @@ export default function Veiculos() {
 
                     {/* Lotação / Administrativo */}
                     <div className="col-span-2 border-t pt-4 mt-2">
-                      <h4 className="text-sm font-semibold text-gray-700 mb-3">Lotação</h4>
+                      <h4 className="text-sm font-semibold text-slate-700 mb-3">Lotação</h4>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Unidade</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Unidade</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.unidade_id || ''}
@@ -893,7 +893,7 @@ export default function Veiculos() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Subunidade</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Subunidade</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.subunidade_id || ''}
@@ -907,7 +907,7 @@ export default function Veiculos() {
                       </select>
                     </div>
                     <div className="col-span-2">
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Centro de Custo</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Centro de Custo</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.centro_custo_id || ''}
@@ -926,10 +926,10 @@ export default function Veiculos() {
               {/* 🔧 Dados Técnicos */}
               {activeTab === 'tecnico' && (
                 <div className="bg-white rounded-lg p-6 space-y-4">
-                  <h3 className="text-base font-semibold text-gray-800 mb-4">Dados Técnicos</h3>
+                  <h3 className="text-sm font-semibold text-slate-700 mb-4">Dados Técnicos</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Motorização</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Motorização</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -939,7 +939,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Cilindrada (cc)</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Cilindrada (cc)</label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -949,7 +949,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Potência (cv)</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Potência (cv)</label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -959,7 +959,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Transmissão</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Transmissão</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.transmissao || ''}
@@ -972,7 +972,7 @@ export default function Veiculos() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Tração</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Tração</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.tracao || ''}
@@ -986,7 +986,7 @@ export default function Veiculos() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Direção</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Direção</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.direcao || ''}
@@ -1021,10 +1021,10 @@ export default function Veiculos() {
                       </div>
                     </div>
                     <div className="col-span-2 border-t pt-4">
-                      <h4 className="text-sm font-semibold text-gray-700 mb-3">Dados do Pneu</h4>
+                      <h4 className="text-sm font-semibold text-slate-700 mb-3">Dados do Pneu</h4>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Dimensões (Ex: 195/65R15)</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Dimensões (Ex: 195/65R15)</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -1034,7 +1034,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Índice de Velocidade</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Índice de Velocidade</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -1044,7 +1044,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Índice de Carga</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Índice de Carga</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -1060,10 +1060,10 @@ export default function Veiculos() {
               {/* ⚙️ Operacional */}
               {activeTab === 'operacional' && (
                 <div className="bg-white rounded-lg p-6 space-y-4">
-                  <h3 className="text-base font-semibold text-gray-800 mb-4">Dados Operacionais</h3>
+                  <h3 className="text-sm font-semibold text-slate-700 mb-4">Dados Operacionais</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Tipo Controle</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Tipo Controle</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.tipo_controle || ''}
@@ -1074,7 +1074,7 @@ export default function Veiculos() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Leitura Inicial</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Leitura Inicial</label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -1083,7 +1083,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Capacidade Tanque (L)</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Capacidade Tanque (L)</label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -1092,7 +1092,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Capacidade Passageiros</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Capacidade Passageiros</label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -1101,7 +1101,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div className="col-span-2">
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Capacidade Carga (kg)</label>
+                      <label className="block text-xs font-normal text-slate-500 mb-1">Capacidade Carga (kg)</label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -1118,10 +1118,10 @@ export default function Veiculos() {
               {activeTab === 'documentacao' && (
                 <div className="bg-white rounded-lg p-6 space-y-6">
                   <div>
-                    <h3 className="text-base font-semibold text-gray-800 mb-4">Documentação</h3>
+                    <h3 className="text-sm font-semibold text-slate-700 mb-4">Documentação</h3>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">Vencimento Licenciamento</label>
+                        <label className="block text-xs font-normal text-slate-500 mb-1">Vencimento Licenciamento</label>
                         <input
                           type="date"
                           className="w-full px-3 py-2 border rounded-lg"
@@ -1130,7 +1130,7 @@ export default function Veiculos() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">Vencimento Seguro</label>
+                        <label className="block text-xs font-normal text-slate-500 mb-1">Vencimento Seguro</label>
                         <input
                           type="date"
                           className="w-full px-3 py-2 border rounded-lg"
@@ -1139,7 +1139,7 @@ export default function Veiculos() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">Vencimento IPVA</label>
+                        <label className="block text-xs font-normal text-slate-500 mb-1">Vencimento IPVA</label>
                         <input
                           type="date"
                           className="w-full px-3 py-2 border rounded-lg"
@@ -1152,7 +1152,7 @@ export default function Veiculos() {
 
                   {/* Seção de Arquivos */}
                   <div className="border-t pt-6">
-                    <h4 className="text-sm font-semibold text-gray-800 mb-4">Arquivos Anexados</h4>
+                    <h4 className="text-sm font-semibold text-slate-700 mb-4">Arquivos Anexados</h4>
 
                     {!editing ? (
                       <p className="text-sm text-gray-500 italic">
@@ -1163,7 +1163,7 @@ export default function Veiculos() {
                         {/* Formulário de upload */}
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">Tipo de Documento *</label>
+                            <label className="block text-xs font-normal text-slate-500 mb-1">Tipo de Documento *</label>
                             <select
                               className="w-full px-3 py-2 border rounded-lg text-sm"
                               value={uploadTipo}
@@ -1180,7 +1180,7 @@ export default function Veiculos() {
                             </select>
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">Descrição (opcional)</label>
+                            <label className="block text-xs font-normal text-slate-500 mb-1">Descrição (opcional)</label>
                             <input
                               type="text"
                               className="w-full px-3 py-2 border rounded-lg text-sm"
@@ -1190,7 +1190,7 @@ export default function Veiculos() {
                             />
                           </div>
                           <div className="col-span-2">
-                            <label className="block text-xs font-medium text-gray-600 mb-1">Arquivo (imagem ou PDF, máx. 10 MB) *</label>
+                            <label className="block text-xs font-normal text-slate-500 mb-1">Arquivo (imagem ou PDF, máx. 10 MB) *</label>
                             <input
                               ref={fileInputRef}
                               type="file"
@@ -1333,27 +1333,27 @@ export default function Veiculos() {
             </div>
 
             {/* Body: Foto + Info */}
-            <div className="flex-1 overflow-y-auto bg-gray-50 no-scrollbar">
+            <div className="flex-1 overflow-hidden bg-gray-50">
               {loadingDetail ? (
-                <div className="flex flex-col items-center justify-center h-96 text-gray-400 gap-3">
+                <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-3">
                   <div className="animate-spin rounded-full h-9 w-9 border-b-2 border-blue-600" />
                   <p className="text-sm">Carregando dados...</p>
                 </div>
               ) : detailVeiculo ? (
                 <>
-                  {/* Grid: Foto + Quick Stats + Tabs + Cards */}
-                  <div className="p-6 space-y-4">
+                  <div className="h-full flex flex-col p-6 gap-4">
 
-                    {/* Foto + Quick Stats + Tabs em uma linha */}
-                    <div className="grid grid-cols-3 gap-4">
-                      {/* Foto (col-span-1) */}
-                      <div className="col-span-1 flex flex-col gap-4">
-                        {/* Carrossel de Fotos */}
+                    <div className="flex gap-4 flex-1 min-h-0">
+
+                      {/* ── Coluna Esquerda: Foto proporcional + 2×2 stats ── */}
+                      <div className="basis-1/3 shrink-0 flex flex-col gap-3">
+
+                        {/* Foto — altura fixa para não deslocar o layout */}
                         {(() => {
                           const fotos = detalheDocumentos.filter(d => d.tipo === 'FOTO')
                           const foto = fotos[carouselIdx]
                           return (
-                            <div className="relative bg-white rounded-xl border-2 border-gray-200 h-40 overflow-hidden select-none">
+                            <div className="relative bg-white rounded-xl border border-gray-200 flex-1 min-h-0 overflow-hidden select-none">
                               {foto ? (
                                 <>
                                   <img
@@ -1376,55 +1376,58 @@ export default function Veiculos() {
                                         onClick={() => setCarouselIdx(i => (i + 1) % fotos.length)}
                                         className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white rounded-full w-7 h-7 flex items-center justify-center text-base leading-none"
                                       >›</button>
-                                      <div className="absolute top-1.5 right-1.5 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded-full">
+                                      <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded-full">
                                         {carouselIdx + 1}/{fotos.length}
                                       </div>
                                     </>
                                   )}
                                 </>
                               ) : (
-                                <div className="flex flex-col items-center justify-center h-full">
-                                  <div className="text-4xl mb-2">🚗</div>
-                                  <p className="text-xs text-gray-400">Sem fotos</p>
+                                <div className="flex flex-col items-center justify-center h-full gap-2">
+                                  <span className="text-5xl">🚗</span>
+                                  <p className="text-xs font-normal text-slate-400">Sem fotos</p>
                                 </div>
                               )}
                             </div>
                           )
                         })()}
 
-                        {/* Quick Stats abaixo */}
+                        {/* Quick stats — 2×2 */}
                         <div className="grid grid-cols-2 gap-2">
                           {[
-                            { label: 'PREFIXO', value: detailVeiculo.prefixo || '—' },
-                            { label: 'COMBUSTÍVEL', value: detailVeiculo.combustivel },
-                            { label: 'TIPO', value: (detailVeiculo.tipo_veiculo_nome ?? '—').replace(/_/g, ' ').slice(0, 15) },
-                            { label: 'CATEGORIA', value: detailVeiculo.categoria?.nome?.slice(0, 12) || '—' },
+                            { label: 'Prefixo',     value: detailVeiculo.prefixo || '—' },
+                            { label: 'Combustível', value: detailVeiculo.combustivel },
+                            { label: 'Tipo',        value: (detailVeiculo.tipo_veiculo_nome ?? '—').replace(/_/g, ' ') },
+                            { label: 'Categoria',   value: detailVeiculo.categoria?.nome || '—' },
                           ].map(({ label, value }) => (
-                            <div key={label} className="bg-white rounded-lg p-3 border border-gray-100">
-                              <p className="text-sm font-semibold text-gray-500 tracking-wide">{label}</p>
-                              <p className="text-sm font-normal text-gray-900 mt-1 truncate">{value}</p>
+                            <div key={label} className="bg-white rounded-lg px-3 py-2.5 border border-gray-100">
+                              <p className="text-xs font-normal text-slate-500">{label}</p>
+                              <p className="text-sm font-medium text-slate-800 mt-0.5 truncate">{value}</p>
                             </div>
                           ))}
                         </div>
                       </div>
 
-                      {/* Info Panels (col-span-2) */}
-                      <div className="col-span-2 space-y-3">
+                      {/* ── Coluna Direita: Tabs + conteúdo sem scroll ── */}
+                      <div className="flex-1 flex flex-col min-h-0 gap-0">
+
                         {/* Tabs */}
-                        <div className="flex gap-2 border-b border-gray-200 overflow-x-auto">
+                        <div className="flex gap-1 border-b border-gray-200 mb-3 shrink-0">
                           {[
-                            { id: 'gerais', label: 'Dados Gerais' },
+                            { id: 'gerais',        label: 'Dados Gerais' },
                             { id: 'classificacao', label: 'Frota' },
-                            { id: 'tecnico', label: 'Técnico' },
-                            { id: 'operacional', label: 'Operação' },
+                            { id: 'tecnico',       label: 'Técnico' },
+                            { id: 'operacional',   label: 'Operação' },
+                            { id: 'documentos',    label: 'Documentos' },
+                            { id: 'observacoes',   label: 'Observações' },
                           ].map((tab) => (
                             <button
                               key={tab.id}
                               onClick={() => setActiveTab(tab.id)}
-                              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                              className={`px-2.5 py-2 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap -mb-px ${
                                 activeTab === tab.id
                                   ? 'border-blue-600 text-blue-600'
-                                  : 'border-transparent text-gray-600 hover:text-gray-900'
+                                  : 'border-transparent text-slate-500 hover:text-slate-800'
                               }`}
                             >
                               {tab.label}
@@ -1432,21 +1435,20 @@ export default function Veiculos() {
                           ))}
                         </div>
 
-                        {/* Tab Content */}
-                        <div className="bg-white rounded-lg p-4 space-y-2 max-h-80 overflow-y-auto border border-gray-100 no-scrollbar">
+                        {/* Conteúdo — cresce para preencher a altura disponível */}
+                        <div className="bg-white rounded-lg px-4 py-3 flex-1 min-h-0 overflow-y-auto border border-gray-100 no-scrollbar">
                           {activeTab === 'gerais' && (
-                            <>
+                            <div className="space-y-1">
                               <InfoRow label="RENAVAM" value={detailVeiculo.renavam} mono />
                               <InfoRow label="Chassi" value={detailVeiculo.chassi} mono />
                               <InfoRow label="Cor" value={detailVeiculo.cor} />
                               <InfoRow label="Motorização" value={detailVeiculo.motorizacao} />
                               <InfoRow label="UF" value={detailVeiculo.uf} />
                               <InfoRow label="Município" value={detailVeiculo.municipio} />
-                            </>
+                            </div>
                           )}
-
                           {activeTab === 'classificacao' && (
-                            <>
+                            <div className="space-y-1">
                               <InfoRow label="Tipo de Frota" value={tiposFrota?.find(t => t.id === detailVeiculo.tipo_frota_id)?.nome} />
                               <InfoRow label="Nº Patrimônio" value={detailVeiculo.numero_patrimonio} />
                               <InfoRow label="Tipo Aquisição" value={detailVeiculo.tipo_aquisicao} />
@@ -1471,11 +1473,10 @@ export default function Veiculos() {
                                   ? `${detailVeiculo.centro_custo.codigo} — ${detailVeiculo.centro_custo.nome}`
                                   : null}
                               />
-                            </>
+                            </div>
                           )}
-
                           {activeTab === 'tecnico' && (
-                            <>
+                            <div className="space-y-1">
                               <InfoRow label="Cilindrada" value={detailVeiculo.cilindrada ? `${detailVeiculo.cilindrada} cc` : null} />
                               <InfoRow label="Potência" value={detailVeiculo.potencia ? `${detailVeiculo.potencia} cv` : null} />
                               <InfoRow label="Transmissão" value={detailVeiculo.transmissao} />
@@ -1484,45 +1485,112 @@ export default function Veiculos() {
                               <InfoRow label="Vidros Elétricos" value={detailVeiculo.vidros_eletricos != null ? (detailVeiculo.vidros_eletricos ? 'Sim' : 'Não') : null} />
                               <InfoRow label="Ar Condicionado" value={detailVeiculo.ar_condicionado != null ? (detailVeiculo.ar_condicionado ? 'Sim' : 'Não') : null} />
                               {detailVeiculo.pneu_dimensao && (
-                                <InfoRow
-                                  label="Pneu"
-                                  value={[detailVeiculo.pneu_dimensao, detailVeiculo.pneu_velocidade, detailVeiculo.pneu_carga].filter(Boolean).join(' · ')}
-                                />
+                                <InfoRow label="Pneu" value={[detailVeiculo.pneu_dimensao, detailVeiculo.pneu_velocidade, detailVeiculo.pneu_carga].filter(Boolean).join(' · ')} />
                               )}
-                            </>
+                            </div>
                           )}
-
                           {activeTab === 'operacional' && (
-                            <>
+                            <div className="space-y-1">
                               <InfoRow label="Tipo de Controle" value={detailVeiculo.tipo_controle} />
                               <InfoRow label="Leitura Inicial" value={detailVeiculo.hodometro_horimetro_inicial} />
                               <InfoRow label="Cap. Tanque" value={detailVeiculo.capacidade_tanque ? `${detailVeiculo.capacidade_tanque} L` : null} />
                               <InfoRow label="Cap. Passageiros" value={detailVeiculo.capacidade_passageiros} />
                               <InfoRow label="Cap. Carga" value={detailVeiculo.capacidade_carga ? `${detailVeiculo.capacidade_carga} kg` : null} />
-                            </>
+                            </div>
+                          )}
+                          {activeTab === 'documentos' && (
+                            <div className="space-y-4">
+                              {/* Fotos */}
+                              {(() => {
+                                const fotos = detalheDocumentos.filter(d => d.tipo === 'FOTO')
+                                return fotos.length > 0 ? (
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Fotos ({fotos.length})</p>
+                                    <div className="grid grid-cols-3 gap-2">
+                                      {fotos.map((doc, idx) => (
+                                        <button
+                                          key={doc.id}
+                                          onClick={() => setCarouselIdx(idx)}
+                                          className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
+                                            carouselIdx === idx ? 'border-blue-500 ring-1 ring-blue-300' : 'border-transparent hover:border-blue-300'
+                                          }`}
+                                        >
+                                          <img src={`/media/${doc.arquivo}`} alt={doc.descricao || 'Foto'} className="w-full h-full object-cover" />
+                                          {doc.descricao && (
+                                            <div className="absolute bottom-0 inset-x-0 bg-black/50 text-white text-[10px] px-1.5 py-0.5 truncate">
+                                              {doc.descricao}
+                                            </div>
+                                          )}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ) : null
+                              })()}
+
+                              {/* Outros documentos */}
+                              {(() => {
+                                const outros = detalheDocumentos.filter(d => d.tipo !== 'FOTO')
+                                return outros.length > 0 ? (
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Arquivos ({outros.length})</p>
+                                    <div className="space-y-1.5">
+                                      {outros.map(doc => (
+                                        <a
+                                          key={doc.id}
+                                          href={`/media/${doc.arquivo}`}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50 hover:bg-blue-50 border border-gray-100 hover:border-blue-200 transition-colors group"
+                                        >
+                                          <span className="text-xl shrink-0">{TIPO_DOC_ICONE[doc.tipo] ?? '📎'}</span>
+                                          <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-slate-800 truncate">{doc.descricao || TIPO_DOC_LABEL[doc.tipo] || doc.tipo}</p>
+                                            <p className="text-xs text-slate-400">{TIPO_DOC_LABEL[doc.tipo]} · {new Date(doc.criado_em).toLocaleDateString('pt-BR')}</p>
+                                          </div>
+                                          <span className="text-xs text-blue-500 group-hover:text-blue-700 font-medium shrink-0">Abrir →</span>
+                                        </a>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ) : null
+                              })()}
+
+                              {/* Empty state */}
+                              {detalheDocumentos.length === 0 && (
+                                <div className="flex flex-col items-center justify-center h-full gap-2 text-slate-400">
+                                  <span className="text-3xl">📁</span>
+                                  <p className="text-sm">Nenhum arquivo anexado</p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          {activeTab === 'observacoes' && (
+                            <div className="h-full">
+                              {detailVeiculo.observacoes ? (
+                                <p className="text-sm font-normal text-slate-700 leading-relaxed whitespace-pre-wrap">{detailVeiculo.observacoes}</p>
+                              ) : (
+                                <div className="flex flex-col items-center justify-center h-full gap-2 text-slate-400">
+                                  <span className="text-3xl">📝</span>
+                                  <p className="text-sm">Nenhuma observação registrada</p>
+                                </div>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>
                     </div>
 
-                    {/* Observações (full width) */}
-                    {detailVeiculo.observacoes && (
-                      <div className="bg-white rounded-lg p-4 border border-gray-100">
-                        <h4 className="text-sm font-medium text-gray-600 uppercase tracking-wide mb-2">Observações</h4>
-                        <p className="text-sm text-gray-600 leading-relaxed">{detailVeiculo.observacoes}</p>
-                      </div>
-                    )}
-
-                    {/* Documentação (full width) */}
-                    <div className="grid grid-cols-3 gap-3">
+                    {/* Documentação — 3 cards em linha */}
+                    <div className="grid grid-cols-3 gap-3 shrink-0">
                       {[
-                        { label: 'IPVA', value: fmtDate(detailVeiculo.vencimento_ipva) },
-                        { label: 'LICENCIAMENTO', value: fmtDate(detailVeiculo.vencimento_licenciamento) },
-                        { label: 'SEGURO', value: fmtDate(detailVeiculo.vencimento_seguro) },
+                        { label: 'IPVA',           value: fmtDate(detailVeiculo.vencimento_ipva) },
+                        { label: 'Licenciamento',  value: fmtDate(detailVeiculo.vencimento_licenciamento) },
+                        { label: 'Seguro',         value: fmtDate(detailVeiculo.vencimento_seguro) },
                       ].map(({ label, value }) => (
-                        <div key={label} className="bg-white rounded-lg p-4 border border-gray-100">
-                          <p className="text-sm font-semibold text-gray-500 tracking-wide">{label}</p>
-                          <p className="text-sm font-normal text-gray-900 mt-1">{value || '—'}</p>
+                        <div key={label} className="bg-white rounded-lg px-4 py-3 border border-gray-100">
+                          <p className="text-xs font-normal text-slate-500">{label}</p>
+                          <p className="text-sm font-medium text-slate-800 mt-0.5">{value || '—'}</p>
                         </div>
                       ))}
                     </div>

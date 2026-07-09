@@ -204,10 +204,10 @@ export default function Parametrizacoes() {
             <table className="w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Nome</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Sigla</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Situação</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-700">Ações</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Nome</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Sigla</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Situação</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-slate-500">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
@@ -219,7 +219,7 @@ export default function Parametrizacoes() {
                   unidades.map((u) => (
                     <tr key={u.id} className="hover:bg-gray-50">
                       <td className="px-6 py-3 text-sm text-gray-800">{u.nome}</td>
-                      <td className="px-6 py-3 text-sm text-gray-600">{u.sigla || '—'}</td>
+                      <td className="px-6 py-3 text-sm text-slate-500">{u.sigla || '—'}</td>
                       <td className="px-6 py-3">
                         <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusBadge(u.ativa)}`}>
                           {u.ativa ? 'Ativa' : 'Inativa'}
@@ -280,11 +280,11 @@ export default function Parametrizacoes() {
             <table className="w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Nome</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Sigla</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Unidade</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Situação</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-700">Ações</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Nome</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Sigla</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Unidade</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Situação</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-slate-500">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
@@ -296,8 +296,8 @@ export default function Parametrizacoes() {
                   setores.map((s) => (
                     <tr key={s.id} className="hover:bg-gray-50">
                       <td className="px-6 py-3 text-sm text-gray-800">{s.nome}</td>
-                      <td className="px-6 py-3 text-sm text-gray-600">{s.sigla || '—'}</td>
-                      <td className="px-6 py-3 text-sm text-gray-600">{unidadeNome(s.unidade_id)}</td>
+                      <td className="px-6 py-3 text-sm text-slate-500">{s.sigla || '—'}</td>
+                      <td className="px-6 py-3 text-sm text-slate-500">{unidadeNome(s.unidade_id)}</td>
                       <td className="px-6 py-3">
                         <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusBadge(s.ativa)}`}>
                           {s.ativa ? 'Ativa' : 'Inativa'}
@@ -357,10 +357,10 @@ export default function Parametrizacoes() {
             <table className="w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Código</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Nome</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Situação</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-700">Ações</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Código</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Nome</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Situação</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-slate-500">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
@@ -372,7 +372,7 @@ export default function Parametrizacoes() {
                   centros.map((c) => (
                     <tr key={c.id} className="hover:bg-gray-50">
                       <td className="px-6 py-3 text-sm text-gray-800">{c.codigo}</td>
-                      <td className="px-6 py-3 text-sm text-gray-600">{c.nome}</td>
+                      <td className="px-6 py-3 text-sm text-slate-500">{c.nome}</td>
                       <td className="px-6 py-3">
                         <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusBadge(c.ativa)}`}>
                           {c.ativa ? 'Ativa' : 'Inativa'}
@@ -737,7 +737,7 @@ function ModalShell({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-          <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
+          <h2 className="text-lg font-semibold text-slate-800">{title}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600" aria-label="Fechar">✕</button>
         </div>
         <div className="p-6">{children}</div>
@@ -749,7 +749,7 @@ function ModalShell({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1">
-      <label className="text-xs font-medium text-gray-600">{label}</label>
+      <label className="text-xs font-normal text-slate-500">{label}</label>
       {children}
     </div>
   )
@@ -839,15 +839,15 @@ function LookupCrud({ config }: { config: LookupCrudConfig }) {
         <table className="w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Nome</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Nome</th>
               {config.hasDescricao && (
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Descrição</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Descrição</th>
               )}
               {config.parent && (
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">{config.parent.label}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">{config.parent.label}</th>
               )}
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Situação</th>
-              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-700">Ações</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Situação</th>
+              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-slate-500">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 bg-white">
@@ -860,10 +860,10 @@ function LookupCrud({ config }: { config: LookupCrudConfig }) {
                 <tr key={row.id} className="hover:bg-gray-50">
                   <td className="px-6 py-3 text-sm text-gray-800">{row.nome}</td>
                   {config.hasDescricao && (
-                    <td className="px-6 py-3 text-sm text-gray-600">{row.descricao || '—'}</td>
+                    <td className="px-6 py-3 text-sm text-slate-500">{row.descricao || '—'}</td>
                   )}
                   {config.parent && (
-                    <td className="px-6 py-3 text-sm text-gray-600">{parentName(row.marca_id)}</td>
+                    <td className="px-6 py-3 text-sm text-slate-500">{parentName(row.marca_id)}</td>
                   )}
                   <td className="px-6 py-3">
                     <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusBadge(row.ativo)}`}>
