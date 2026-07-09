@@ -6,7 +6,7 @@ Executa com: python seed_parametrizacoes.py
 
 import sqlite3
 
-DB_PATH = 'sigfrota_dev.db'
+DB_PATH = 'sigfrota.db'
 
 def seed_database():
     """Popula dados iniciais no banco de dados usando SQL direto."""
@@ -40,7 +40,7 @@ def seed_database():
         # 2. Tipos de Frota
         tipos_frota_data = [
             ('Próprio', True),
-            ('Locado', True),
+            ('Alugado', True),
             ('Convênio', True),
         ]
         
@@ -68,8 +68,26 @@ def seed_database():
                     (nome, ativo)
                 )
                 print(f"✓ Tipo de Veículo criado: {nome}")
-        
-        # 4. Secretarias
+
+        # 4. Combustíveis
+        combustiveis_data = [
+            ('GASOLINA', True),
+            ('DIESEL', True),
+            ('FLEX', True),
+            ('ELETRICO', True),
+            ('GNV', True),
+        ]
+
+        for nome, ativo in combustiveis_data:
+            cursor.execute('SELECT id FROM combustiveis WHERE nome = ?', (nome,))
+            if not cursor.fetchone():
+                cursor.execute(
+                    'INSERT INTO combustiveis (nome, ativo) VALUES (?, ?)',
+                    (nome, ativo)
+                )
+                print(f"✓ Combustível criado: {nome}")
+
+        # 5. Secretarias
         cursor.execute("SELECT id FROM secretarias WHERE nome = ?", 
                       ('Secretaria de Obras e Serviços',))
         secretaria_id = cursor.fetchone()

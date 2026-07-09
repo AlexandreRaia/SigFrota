@@ -105,6 +105,22 @@ export type TipoControle = 'QUILOMETRAGEM' | 'HORIMETRO'
 export type Combustivel = 'GASOLINA' | 'DIESEL' | 'FLEX' | 'ELETRICO' | 'GNV'
 export type TipoVeiculoNome = 'AUTOMOVEL' | 'UTILITARIO' | 'CAMIONETE' | 'CAMIONETA' | 'MICRO_ONIBUS' | 'ONIBUS' | 'MOTOCICLETA' | 'CAMINHAO' | 'CAMINHAO_BASCULANTE' | 'CAMINHAO_PIPA' | 'CAMINHAO_VARREDOR' | 'RETROESCAVADEIRA' | 'PA_CARREGADEIRA' | 'TRATOR_AGRICOLA' | 'AMBULANCIA' | 'VIATURA_GUARDA_MUNICIPAL' | 'ONIBUS_ESCOLAR' | 'VAN'
 
+/** Registro da tabela combustiveis (lookup administrável). */
+export interface CombustivelItem {
+  id: number
+  nome: string
+  ativo: boolean
+}
+
+export interface VeiculoDocumento {
+  id: number
+  veiculo_id: number
+  tipo: string
+  descricao: string
+  arquivo: string    // caminho relativo ao MEDIA_DIR, ex: veiculos/ABC-1234/CRLV/uuid.pdf
+  criado_em: string
+}
+
 // ── Veículos ───────────────────────────────────────────────────────────────────
 
 export interface VeiculoListItem {

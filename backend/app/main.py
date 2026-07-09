@@ -61,16 +61,15 @@ def create_application() -> FastAPI:
     # API routes
     application.include_router(api_router, prefix="/api/v1")
 
+    # Servir arquivos de mídia (sempre, inclusive em produção)
+    import os
+    os.makedirs(settings.MEDIA_DIR, exist_ok=True)
+    application.mount("/media", StaticFiles(directory=settings.MEDIA_DIR), name="media")
+
     # Redireciona raiz para a documentação
     @application.get("/", include_in_schema=False)
     async def root():
         return RedirectResponse(url="/api/docs")
-
-    # Servir arquivos de mídia em desenvolvimento
-    if settings.DEBUG:
-        import os
-        os.makedirs(settings.MEDIA_DIR, exist_ok=True)
-        application.mount("/media", StaticFiles(directory=settings.MEDIA_DIR), name="media")
 
     return application
 

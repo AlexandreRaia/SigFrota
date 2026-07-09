@@ -100,6 +100,18 @@ class TipoVeiculo(Base):
         return f"<TipoVeiculo {self.nome}>"
 
 
+class Combustivel(Base):
+    """Tipos de combustível gerenciáveis pelo administrador."""
+    __tablename__ = "combustiveis"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    nome: Mapped[str] = mapped_column(String(30), unique=True)
+    ativo: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    def __repr__(self) -> str:
+        return f"<Combustivel {self.nome}>"
+
+
 class Marca(Base):
     __tablename__ = "marcas"
 

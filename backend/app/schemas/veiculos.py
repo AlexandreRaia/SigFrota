@@ -8,18 +8,61 @@ class CategoriaResponse(BaseModel):
     """Categoria de veículo (Passeio, Utilitário, Ambulância, etc)."""
     id: int
     nome: str
+    descricao: str = ""
     ativa: bool
 
     model_config = {"from_attributes": True}
 
 
+class CategoriaCreate(BaseModel):
+    """Dados para criar uma categoria."""
+    nome: str = Field(min_length=1, max_length=60)
+    descricao: str = Field(default="", max_length=250)
+
+
+class CategoriaUpdate(BaseModel):
+    """Dados para atualizar uma categoria (campos opcionais)."""
+    nome: str | None = Field(default=None, min_length=1, max_length=60)
+    descricao: str | None = Field(default=None, max_length=250)
+    ativa: bool | None = None
+
+
 class TipoFrotaResponse(BaseModel):
-    """Tipo de frota (Próprio, Locado, Convênio)."""
+    """Tipo de frota (Próprio, Alugado, Convênio)."""
     id: int
     nome: str
     ativa: bool
 
     model_config = {"from_attributes": True}
+
+
+class TipoFrotaCreate(BaseModel):
+    """Dados para criar um tipo de frota."""
+    nome: str = Field(min_length=1, max_length=50)
+
+
+class TipoFrotaUpdate(BaseModel):
+    """Dados para atualizar um tipo de frota (campos opcionais)."""
+    nome: str | None = Field(default=None, min_length=1, max_length=50)
+    ativa: bool | None = None
+
+
+class CombustivelResponse(BaseModel):
+    """Tipo de combustível (GASOLINA, DIESEL, FLEX, etc.)."""
+    id: int
+    nome: str
+    ativo: bool
+
+    model_config = {"from_attributes": True}
+
+
+class CombustivelCreate(BaseModel):
+    nome: str = Field(min_length=1, max_length=30)
+
+
+class CombustivelUpdate(BaseModel):
+    nome: str | None = Field(default=None, min_length=1, max_length=30)
+    ativo: bool | None = None
 
 
 class UnidadeResponse(BaseModel):
@@ -108,12 +151,34 @@ class TipoVeiculoResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class TipoVeiculoCreate(BaseModel):
+    """Dados para criar um tipo de veículo."""
+    nome: str = Field(min_length=1, max_length=50)
+
+
+class TipoVeiculoUpdate(BaseModel):
+    """Dados para atualizar um tipo de veículo (campos opcionais)."""
+    nome: str | None = Field(default=None, min_length=1, max_length=50)
+    ativo: bool | None = None
+
+
 class MarcaResponse(BaseModel):
     id: int
     nome: str
     ativo: bool
 
     model_config = {"from_attributes": True}
+
+
+class MarcaCreate(BaseModel):
+    """Dados para criar uma marca."""
+    nome: str = Field(min_length=1, max_length=60)
+
+
+class MarcaUpdate(BaseModel):
+    """Dados para atualizar uma marca (campos opcionais)."""
+    nome: str | None = Field(default=None, min_length=1, max_length=60)
+    ativo: bool | None = None
 
 
 class ModeloResponse(BaseModel):
@@ -123,6 +188,19 @@ class ModeloResponse(BaseModel):
     ativo: bool
 
     model_config = {"from_attributes": True}
+
+
+class ModeloCreate(BaseModel):
+    """Dados para criar um modelo."""
+    nome: str = Field(min_length=1, max_length=100)
+    marca_id: int
+
+
+class ModeloUpdate(BaseModel):
+    """Dados para atualizar um modelo (campos opcionais)."""
+    nome: str | None = Field(default=None, min_length=1, max_length=100)
+    marca_id: int | None = None
+    ativo: bool | None = None
 
 
 # ── Veículo ────────────────────────────────────────────────────────────────────
@@ -289,5 +367,19 @@ class VeiculoListItem(BaseModel):
     categoria: CategoriaResponse | None = None
     combustivel: str
     unidade: UnidadeResponse | None = None
+
+    model_config = {"from_attributes": True}
+
+
+# ── Documentos de Veículos ────────────────────────────────────────────
+
+class DocumentoResponse(BaseModel):
+    """Documento ou arquivo vinculado a um veículo (CRLV, foto, apólice, etc)."""
+    id: int
+    veiculo_id: int
+    tipo: str
+    descricao: str
+    arquivo: str          # caminho relativo a MEDIA_DIR, ex: veiculos/ABC-1234/CRLV/uuid.pdf
+    criado_em: datetime
 
     model_config = {"from_attributes": True}

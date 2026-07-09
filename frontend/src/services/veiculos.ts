@@ -1,7 +1,8 @@
 import api from './api'
 import type {
   Marca, Modelo, TipoVeiculo, Veiculo, VeiculoListItem,
-  Categoria, TipoFrota, Unidade, Subunidade, CentroCusto
+  Categoria, TipoFrota, Unidade, Subunidade, CentroCusto, CombustivelItem,
+  VeiculoDocumento,
 } from '@/types'
 
 interface VeiculoFilters {
@@ -80,6 +81,33 @@ export const veiculoService = {
   async centrosCusto(): Promise<CentroCusto[]> {
     const response = await api.get<CentroCusto[]>('/veiculos/parametrizacoes/centros-custo')
     return response.data
+  },
+
+  async combustiveis(): Promise<CombustivelItem[]> {
+    const response = await api.get<CombustivelItem[]>('/veiculos/parametrizacoes/combustiveis')
+    return response.data
+  },
+
+  // ── Documentos ────────────────────────────────────────────────────────────
+
+  async listarDocumentos(veiculoId: number): Promise<VeiculoDocumento[]> {
+    const response = await api.get<VeiculoDocumento[]>(`/veiculos/${veiculoId}/documentos`)
+    return response.data
+  },
+
+  async uploadDocumento(veiculoId: number, tipo: string, descricao: string, arquivo: File): Promise<VeiculoDocumento> {
+    const formData = new FormData()
+    formData.append('tipo', tipo)
+    formData.append('descricao', descricao)
+    formData.append('arquivo', arquivo)
+    const response = await api.post<VeiculoDocumento>(`/veiculos/${veiculoId}/documentos`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return response.data
+  },
+
+  async deletarDocumento(veiculoId: number, docId: number): Promise<void> {
+    await api.delete(`/veiculos/${veiculoId}/documentos/${docId}`)
   },
 
   // ── Base ────────────────────────────────────────────────────────────────────

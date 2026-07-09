@@ -1,22 +1,41 @@
-from fastapi import APIRouter, Depends, Query, HTTPException
+import re
+import uuid
+from pathlib import Path
+
+import aiofiles
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 import traceback
 
+from app.core.config import settings
 from app.core.dependencies import DatabaseDep, get_current_user, require_perfil
+from app.models.veiculos import VeiculoDocumento
 from app.repositories.veiculos import (
     VeiculoRepository, MarcaRepository, ModeloRepository, TipoVeiculoRepository,
     CategoriaRepository, TipoFrotaRepository, UnidadeRepository,
-    SubunidadeRepository, CentroCustoRepository
+    SubunidadeRepository, CentroCustoRepository, CombustivelRepository,
+    DocumentoRepository,
 )
 from app.schemas.common import MessageResponse
 from app.schemas.veiculos import (
     MarcaResponse, ModeloResponse, TipoVeiculoResponse,
     CategoriaResponse, TipoFrotaResponse, UnidadeResponse,
-    SubunidadeResponse, CentroCustoResponse,
+    SubunidadeResponse, CentroCustoResponse, CombustivelResponse,
     VeiculoCreate, VeiculoListItem, VeiculoResponse, VeiculoUpdate,
+    DocumentoResponse,
 )
 from app.services.veiculos import VeiculoService
 
 router = APIRouter(prefix="/veiculos", tags=["Veículos"])
+
+# Constantes de upload
+_TIPOS_VALIDOS = {"FOTO", "CRLV", "NF_COMPRA", "APOLICE_SEGURO", "MANUTENCAO", "INSPECAO", "OUTRO"}
+_EXTENSOES_VALIDAS = {".jpg", ".jpeg", ".png", ".pdf", ".webp"}
+_TAMANHO_MAX_BYTES = 10 * 1024 * 1024  # 10 MB
+
+
+def _placa_para_pasta(placa: str) -> str:
+    """Sanitiza a placa para usar como nome de pasta."""
+    return re.sub(r'[^A-Z0-9]', '-', placa.upper())
 
 
 # ── Lookups Parametrizadores ───────────────────────────────────────────────
@@ -56,6 +75,10 @@ async def listar_centros_custo(db: DatabaseDep):
     """Listar todos os centros de custo."""
     return await CentroCustoRepository(db).get_ativos()
 
+@router.get("/parametrizacoes/combustiveis", response_model=list[CombustivelResponse], dependencies=[Depends(get_current_user)])
+async def listar_combustiveis(db: DatabaseDep):
+    """Listar tipos de combustível ativos."""
+    return await CombustivelRepository(db).get_ativos()
 
 # ── Lookups Base (Marca, Modelo, TipoVeiculo) ───────────────────────────────
 
@@ -165,3 +188,74 @@ async def excluir_veiculo(veiculo_id: int, db: DatabaseDep):
         raise HTTPException(status_code=404, detail="Veículo não encontrado")
     await repo.delete(veiculo)
     return MessageResponse(message="Veículo excluído com sucesso")
+
+
+# ── Documentos do Veículo ─────────────────────────────────────────────────────
+
+@router.get("/{veiculo_id}/documentos", response_model=list[DocumentoResponse], dependencies=[Depends(get_current_user)])
+async def listar_documentos(veiculo_id: int, db: DatabaseDep):
+    """Listar todos os documentos/arquivos de um veículo."""
+    veiculo = await VeiculoRepository(db).get_by_id(veiculo_id)
+    if not veiculo:
+        raise HTTPException(status_code=404, detail="Veículo não encontrado")
+    return await DocumentoRepository(db).listar_por_veiculo(veiculo_id)
+
+
+@router.post("/{veiculo_id}/documentos", response_model=DocumentoResponse, dependencies=[Depends(require_perfil("ADMIN", "GESTOR"))])
+async def upload_documento(
+    veiculo_id: int,
+    db: DatabaseDep,
+    tipo: str = Form(...),
+    descricao: str = Form(""),
+    arquivo: UploadFile = File(...),
+):
+    """Fazer upload de um documento para um veículo. Arquivo salvo em media/veiculos/{placa}/{tipo}/."""
+    veiculo = await VeiculoRepository(db).get_by_id(veiculo_id)
+    if not veiculo:
+        raise HTTPException(status_code=404, detail="Veículo não encontrado")
+
+    tipo = tipo.upper()
+    if tipo not in _TIPOS_VALIDOS:
+        raise HTTPException(status_code=400, detail=f"Tipo inválido. Permitidos: {', '.join(sorted(_TIPOS_VALIDOS))}")
+
+    ext = Path(arquivo.filename or "").suffix.lower()
+    if ext not in _EXTENSOES_VALIDAS:
+        raise HTTPException(status_code=400, detail="Formato não permitido. Use: JPG, PNG, PDF ou WEBP")
+
+    conteudo = await arquivo.read()
+    if len(conteudo) > _TAMANHO_MAX_BYTES:
+        raise HTTPException(status_code=400, detail="Arquivo muito grande. Máximo permitido: 10 MB")
+
+    placa_dir = _placa_para_pasta(veiculo.placa)
+    nome_arquivo = f"{uuid.uuid4().hex}{ext}"
+    caminho_relativo = f"veiculos/{placa_dir}/{tipo}/{nome_arquivo}"
+    caminho_absoluto = Path(settings.MEDIA_DIR) / caminho_relativo
+
+    caminho_absoluto.parent.mkdir(parents=True, exist_ok=True)
+    async with aiofiles.open(caminho_absoluto, "wb") as f:
+        await f.write(conteudo)
+
+    doc = VeiculoDocumento(
+        veiculo_id=veiculo_id,
+        tipo=tipo,
+        descricao=descricao.strip()[:200],
+        arquivo=caminho_relativo,
+    )
+    return await DocumentoRepository(db).create(doc)
+
+
+@router.delete("/{veiculo_id}/documentos/{doc_id}", response_model=MessageResponse, dependencies=[Depends(require_perfil("ADMIN", "GESTOR"))])
+async def deletar_documento(veiculo_id: int, doc_id: int, db: DatabaseDep):
+    """Remover um documento de um veículo (arquivo físico + registro no banco)."""
+    repo = DocumentoRepository(db)
+    doc = await repo.get_by_id(doc_id)
+    if not doc or doc.veiculo_id != veiculo_id:
+        raise HTTPException(status_code=404, detail="Documento não encontrado")
+
+    caminho = Path(settings.MEDIA_DIR) / doc.arquivo
+    if caminho.exists():
+        caminho.unlink()
+
+    await repo.delete(doc)
+    return MessageResponse(message="Documento removido com sucesso")
+

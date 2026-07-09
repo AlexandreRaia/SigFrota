@@ -12,7 +12,16 @@ import {
 } from '@/services/parametrizacoes'
 import type { Unidade, Subunidade, CentroCusto } from '@/types'
 
-type Aba = 'unidades' | 'setores' | 'centros'
+type Aba =
+  | 'unidades'
+  | 'setores'
+  | 'centros'
+  | 'tipos-frota'
+  | 'categorias'
+  | 'tipos-veiculo'
+  | 'marcas'
+  | 'modelos'
+  | 'combustiveis'
 
 const statusBadge = (ativa: boolean) =>
   ativa ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
@@ -34,6 +43,12 @@ export default function Parametrizacoes() {
   const { data: centros = [], isPending: loadingCentros } = useQuery({
     queryKey: ['param-centros-custo'],
     queryFn: () => parametrizacaoService.listarCentrosCusto(),
+  })
+
+  // Marcas usadas tanto na aba "Marcas" quanto como opções da aba "Modelos".
+  const { data: marcasList = [] } = useQuery({
+    queryKey: ['param-marcas'],
+    queryFn: () => parametrizacaoService.listarMarcas(),
   })
 
   const unidadeNome = (id: number | null) =>
@@ -137,10 +152,10 @@ export default function Parametrizacoes() {
     <div className="space-y-4 p-6">
       {/* Cabeçalho */}
       <div>
-        <h1 className="text-3xl font-bold">🏢 Unidades e Setores</h1>
+        <h1 className="text-3xl font-bold">🏢 Parametrizações</h1>
         <p className="mt-1 text-sm text-gray-500">
-          A <strong>Unidade</strong> representa uma Secretaria (ex: Secretaria de Administração / SMA).
-          O <strong>Setor/Departamento</strong> pertence a uma Unidade (ex: Departamento de Transportes).
+          Cadastros de apoio do sistema. A <strong>Unidade</strong> representa uma Secretaria (ex: Secretaria de Administração / SMA)
+          e o <strong>Setor/Departamento</strong> pertence a uma Unidade (ex: Departamento de Transportes).
         </p>
       </div>
 
@@ -150,6 +165,12 @@ export default function Parametrizacoes() {
           { id: 'unidades', label: 'Unidades' },
           { id: 'setores', label: 'Setores / Departamentos' },
           { id: 'centros', label: 'Centros de Custo' },
+          { id: 'tipos-frota', label: 'Tipos de Frota' },
+          { id: 'categorias', label: 'Categorias' },
+          { id: 'tipos-veiculo', label: 'Tipos de Veículo' },
+          { id: 'marcas', label: 'Marcas' },
+          { id: 'modelos', label: 'Modelos' },
+          { id: 'combustiveis', label: 'Combustíveis' },
         ] as { id: Aba; label: string }[]).map((t) => (
           <button
             key={t.id}
@@ -391,6 +412,98 @@ export default function Parametrizacoes() {
             </table>
           </div>
         </div>
+      )}
+
+      {/* ── Aba Tipos de Frota ────────────────────────────────────────────── */}
+      {aba === 'tipos-frota' && (
+        <LookupCrud
+          config={{
+            singular: 'Tipo de Frota',
+            novoLabel: 'Novo Tipo de Frota',
+            queryKey: 'param-tipos-frota',
+            list: parametrizacaoService.listarTiposFrota,
+            create: parametrizacaoService.criarTipoFrota,
+            update: parametrizacaoService.atualizarTipoFrota,
+            remove: parametrizacaoService.excluirTipoFrota,
+          }}
+        />
+      )}
+
+      {/* ── Aba Categorias ────────────────────────────────────────────────── */}
+      {aba === 'categorias' && (
+        <LookupCrud
+          config={{
+            singular: 'Categoria',
+            novoLabel: 'Nova Categoria',
+            queryKey: 'param-categorias',
+            hasDescricao: true,
+            list: parametrizacaoService.listarCategorias,
+            create: parametrizacaoService.criarCategoria,
+            update: parametrizacaoService.atualizarCategoria,
+            remove: parametrizacaoService.excluirCategoria,
+          }}
+        />
+      )}
+
+      {/* ── Aba Tipos de Veículo ──────────────────────────────────────────── */}
+      {aba === 'tipos-veiculo' && (
+        <LookupCrud
+          config={{
+            singular: 'Tipo de Veículo',
+            novoLabel: 'Novo Tipo de Veículo',
+            queryKey: 'param-tipos-veiculo',
+            list: parametrizacaoService.listarTiposVeiculo,
+            create: parametrizacaoService.criarTipoVeiculo,
+            update: parametrizacaoService.atualizarTipoVeiculo,
+            remove: parametrizacaoService.excluirTipoVeiculo,
+          }}
+        />
+      )}
+
+      {/* ── Aba Marcas ────────────────────────────────────────────────────── */}
+      {aba === 'marcas' && (
+        <LookupCrud
+          config={{
+            singular: 'Marca',
+            novoLabel: 'Nova Marca',
+            queryKey: 'param-marcas',
+            list: parametrizacaoService.listarMarcas,
+            create: parametrizacaoService.criarMarca,
+            update: parametrizacaoService.atualizarMarca,
+            remove: parametrizacaoService.excluirMarca,
+          }}
+        />
+      )}
+
+      {/* ── Aba Modelos ───────────────────────────────────────────────────── */}
+      {aba === 'modelos' && (
+        <LookupCrud
+          config={{
+            singular: 'Modelo',
+            novoLabel: 'Novo Modelo',
+            queryKey: 'param-modelos',
+            list: parametrizacaoService.listarModelos,
+            create: parametrizacaoService.criarModelo,
+            update: parametrizacaoService.atualizarModelo,
+            remove: parametrizacaoService.excluirModelo,
+            parent: { label: 'Marca', options: marcasList },
+          }}
+        />
+      )}
+
+      {/* ── Aba Combustíveis ──────────────────────────────────────────────── */}
+      {aba === 'combustiveis' && (
+        <LookupCrud
+          config={{
+            singular: 'Combustível',
+            novoLabel: 'Novo Combustível',
+            queryKey: 'param-combustiveis',
+            list: parametrizacaoService.listarCombustiveis,
+            create: parametrizacaoService.criarCombustivel,
+            update: parametrizacaoService.atualizarCombustivel,
+            remove: parametrizacaoService.excluirCombustivel,
+          }}
+        />
       )}
 
       {/* ── Modal Unidade ─────────────────────────────────────────────────── */}
@@ -639,5 +752,243 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <label className="text-xs font-medium text-gray-600">{label}</label>
       {children}
     </div>
+  )
+}
+
+// ── CRUD genérico para tabelas de apoio (Selects) ─────────────────────────────
+
+type LookupRow = {
+  id: number
+  nome: string
+  ativo: boolean
+  descricao?: string
+  marca_id?: number
+}
+
+type LookupPayloadData = {
+  nome: string
+  ativo: boolean
+  descricao?: string
+  marca_id?: number
+}
+
+interface LookupCrudConfig {
+  singular: string
+  novoLabel: string
+  queryKey: string
+  list: () => Promise<LookupRow[]>
+  create: (data: LookupPayloadData) => Promise<void>
+  update: (id: number, data: Partial<LookupPayloadData>) => Promise<void>
+  remove: (id: number) => Promise<void>
+  hasDescricao?: boolean
+  parent?: { label: string; options: { id: number; nome: string }[] }
+}
+
+function LookupCrud({ config }: { config: LookupCrudConfig }) {
+  const queryClient = useQueryClient()
+  const [showModal, setShowModal] = useState(false)
+  const [editing, setEditing] = useState<LookupRow | null>(null)
+
+  const { data: itens = [], isPending } = useQuery({
+    queryKey: [config.queryKey],
+    queryFn: config.list,
+  })
+
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: [config.queryKey] })
+
+  const salvar = useMutation({
+    mutationFn: (payload: { id?: number; data: LookupPayloadData }) =>
+      payload.id ? config.update(payload.id, payload.data) : config.create(payload.data),
+    onSuccess: () => { invalidate(); setShowModal(false); setEditing(null) },
+  })
+
+  const toggle = useMutation({
+    mutationFn: (row: LookupRow) => config.update(row.id, { ativo: !row.ativo }),
+    onSuccess: invalidate,
+  })
+
+  const excluir = useMutation({
+    mutationFn: (id: number) => config.remove(id),
+    onSuccess: invalidate,
+    onError: (err: any) =>
+      alert(err?.response?.data?.detail || `Erro ao excluir ${config.singular.toLowerCase()}.`),
+  })
+
+  const parentName = (id?: number) =>
+    config.parent?.options.find((o) => o.id === id)?.nome ?? '—'
+
+  const colSpan = 2 + (config.hasDescricao ? 1 : 0) + (config.parent ? 1 : 0) + 1
+  const semMarcas = !!config.parent && config.parent.options.length === 0
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button
+          onClick={() => { setEditing(null); setShowModal(true) }}
+          disabled={semMarcas}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
+          <span className="flex items-center gap-2">
+            <FiPlus /> {config.novoLabel}
+          </span>
+        </Button>
+      </div>
+
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <table className="w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Nome</th>
+              {config.hasDescricao && (
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Descrição</th>
+              )}
+              {config.parent && (
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">{config.parent.label}</th>
+              )}
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700">Situação</th>
+              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-700">Ações</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100 bg-white">
+            {isPending ? (
+              <tr><td colSpan={colSpan} className="px-6 py-8 text-center text-gray-400">Carregando...</td></tr>
+            ) : itens.length === 0 ? (
+              <tr><td colSpan={colSpan} className="px-6 py-8 text-center text-gray-400">Nenhum registro cadastrado.</td></tr>
+            ) : (
+              itens.map((row) => (
+                <tr key={row.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-3 text-sm text-gray-800">{row.nome}</td>
+                  {config.hasDescricao && (
+                    <td className="px-6 py-3 text-sm text-gray-600">{row.descricao || '—'}</td>
+                  )}
+                  {config.parent && (
+                    <td className="px-6 py-3 text-sm text-gray-600">{parentName(row.marca_id)}</td>
+                  )}
+                  <td className="px-6 py-3">
+                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusBadge(row.ativo)}`}>
+                      {row.ativo ? 'Ativo' : 'Inativo'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-3">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => { setEditing(row); setShowModal(true) }}
+                        className="text-gray-500 hover:text-blue-600"
+                        title="Editar"
+                      >
+                        <FiEdit2 />
+                      </button>
+                      <button
+                        onClick={() => toggle.mutate(row)}
+                        className={row.ativo ? 'text-gray-500 hover:text-red-600' : 'text-gray-500 hover:text-green-600'}
+                        title={row.ativo ? 'Inativar' : 'Ativar'}
+                      >
+                        <FiPower />
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (window.confirm(`Excluir "${row.nome}"?`)) excluir.mutate(row.id)
+                        }}
+                        className="text-gray-500 hover:text-red-600"
+                        title="Excluir"
+                      >
+                        <FiTrash2 />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {showModal && (
+        <LookupModal
+          config={config}
+          row={editing}
+          isSaving={salvar.isPending}
+          error={(salvar.error as any)?.response?.data?.detail}
+          onClose={() => { setShowModal(false); setEditing(null); salvar.reset() }}
+          onSave={(data) => salvar.mutate({ id: editing?.id, data })}
+        />
+      )}
+    </div>
+  )
+}
+
+function LookupModal({
+  config,
+  row,
+  isSaving,
+  error,
+  onClose,
+  onSave,
+}: {
+  config: LookupCrudConfig
+  row: LookupRow | null
+  isSaving: boolean
+  error?: string
+  onClose: () => void
+  onSave: (data: LookupPayloadData) => void
+}) {
+  const [nome, setNome] = useState(row?.nome ?? '')
+  const [descricao, setDescricao] = useState(row?.descricao ?? '')
+  const [marcaId, setMarcaId] = useState<number | ''>(row?.marca_id ?? '')
+  const [ativo, setAtivo] = useState(row?.ativo ?? true)
+  const [localError, setLocalError] = useState('')
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!nome.trim()) return setLocalError('Nome é obrigatório')
+    if (config.parent && !marcaId) return setLocalError(`${config.parent.label} é obrigatória`)
+
+    const data: LookupPayloadData = { nome: nome.trim(), ativo }
+    if (config.hasDescricao) data.descricao = descricao.trim()
+    if (config.parent) data.marca_id = Number(marcaId)
+    onSave(data)
+  }
+
+  return (
+    <ModalShell title={row ? `Editar ${config.singular}` : config.novoLabel} onClose={onClose}>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {config.parent && (
+          <Field label={config.parent.label}>
+            <select
+              className="input"
+              value={marcaId}
+              onChange={(e) => setMarcaId(e.target.value ? Number(e.target.value) : '')}
+            >
+              <option value="">Selecione...</option>
+              {config.parent.options.map((o) => (
+                <option key={o.id} value={o.id}>{o.nome}</option>
+              ))}
+            </select>
+          </Field>
+        )}
+        <Field label="Nome">
+          <input className="input" value={nome} onChange={(e) => setNome(e.target.value)} autoFocus />
+        </Field>
+        {config.hasDescricao && (
+          <Field label="Descrição (opcional)">
+            <input className="input" value={descricao} onChange={(e) => setDescricao(e.target.value)} />
+          </Field>
+        )}
+        <label className="flex items-center gap-2 text-sm text-gray-700">
+          <input type="checkbox" checked={ativo} onChange={(e) => setAtivo(e.target.checked)} />
+          Ativo
+        </label>
+
+        {(localError || error) && (
+          <p className="text-sm text-red-600">{localError || error}</p>
+        )}
+
+        <div className="flex justify-end gap-2 pt-2">
+          <Button type="button" variant="secondary" onClick={onClose}>Cancelar</Button>
+          <Button type="submit" isLoading={isSaving} className="bg-blue-600 hover:bg-blue-700">Salvar</Button>
+        </div>
+      </form>
+    </ModalShell>
   )
 }

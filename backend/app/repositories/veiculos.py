@@ -3,8 +3,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.veiculos import (
-    Veiculo, Marca, Modelo, TipoVeiculo,
-    Categoria, TipoFrota, Unidade, Subunidade, CentroCusto
+    Veiculo, Marca, Modelo, TipoVeiculo, Combustivel,
+    Categoria, TipoFrota, Unidade, Subunidade, CentroCusto,
+    VeiculoDocumento,
 )
 from app.repositories.base import BaseRepository
 
@@ -234,5 +235,31 @@ class TipoVeiculoRepository(BaseRepository[TipoVeiculo]):
     async def get_ativos(self) -> list[TipoVeiculo]:
         result = await self.session.execute(
             select(TipoVeiculo).where(TipoVeiculo.ativo == True).order_by(TipoVeiculo.nome)
+        )
+        return list(result.scalars().all())
+
+
+class CombustivelRepository(BaseRepository[Combustivel]):
+    def __init__(self, session: AsyncSession) -> None:
+        super().__init__(Combustivel, session)
+
+    async def get_ativos(self) -> list[Combustivel]:
+        result = await self.session.execute(
+            select(Combustivel).where(Combustivel.ativo == True).order_by(Combustivel.nome)
+        )
+        return list(result.scalars().all())
+
+
+class DocumentoRepository(BaseRepository[VeiculoDocumento]):
+    """Repository para documentos e fotos vinculados a veículos."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        super().__init__(VeiculoDocumento, session)
+
+    async def listar_por_veiculo(self, veiculo_id: int) -> list[VeiculoDocumento]:
+        result = await self.session.execute(
+            select(VeiculoDocumento)
+            .where(VeiculoDocumento.veiculo_id == veiculo_id)
+            .order_by(VeiculoDocumento.criado_em.desc())
         )
         return list(result.scalars().all())

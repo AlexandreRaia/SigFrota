@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { veiculoService } from '@/services/veiculos'
 import { Button } from '@/components/ui/Button'
-import type { Veiculo, VeiculoListItem } from '@/types'
+import type { Veiculo, VeiculoListItem, VeiculoDocumento } from '@/types'
 import { FiFileText, FiEdit2, FiPower } from 'react-icons/fi'
 
 const TABS = [
@@ -55,8 +55,8 @@ const InfoRow = ({
   mono?: boolean
 }) => (
   <div className="flex justify-between items-baseline gap-2 py-1.5 border-b border-gray-50 last:border-0">
-    <span className="text-xs text-gray-500 font-medium shrink-0">{label}</span>
-    <span className={`text-sm text-gray-800 text-right truncate ${mono ? 'font-mono text-xs' : ''}`}>
+    <span className="text-sm text-gray-500 font-medium shrink-0">{label}</span>
+    <span className={`text-sm text-gray-800 text-right truncate ${mono ? 'font-mono' : ''}`}>
       {value != null && value !== '' ? String(value) : <span className="text-gray-300">—</span>}
     </span>
   </div>
@@ -79,6 +79,17 @@ const situacaoBadge = (s?: string | null): { cls: string; label: string } => {
   return map[s ?? ''] ?? { cls: 'bg-gray-100 text-gray-700', label: s ?? '—' }
 }
 
+// ── Helpers de Documentos ─────────────────────────────────────────────────────
+
+const TIPO_DOC_ICONE: Record<string, string> = {
+  FOTO: '📷', CRLV: '📄', NF_COMPRA: '🧾',
+  APOLICE_SEGURO: '🛡️', MANUTENCAO: '🔧', INSPECAO: '🔍', OUTRO: '📎',
+}
+const TIPO_DOC_LABEL: Record<string, string> = {
+  FOTO: 'Foto', CRLV: 'CRLV', NF_COMPRA: 'NF de Compra',
+  APOLICE_SEGURO: 'Apólice de Seguro', MANUTENCAO: 'Manutenção', INSPECAO: 'Inspeção', OUTRO: 'Outro',
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function Veiculos() {
@@ -92,6 +103,13 @@ export default function Veiculos() {
   const [showDetail, setShowDetail] = useState(false)
   const [detailVeiculo, setDetailVeiculo] = useState<Veiculo | null>(null)
   const [loadingDetail, setLoadingDetail] = useState(false)
+  const [carouselIdx, setCarouselIdx] = useState(0)
+
+  // Estado de upload de documentos
+  const [uploadFile, setUploadFile] = useState<File | null>(null)
+  const [uploadTipo, setUploadTipo] = useState('')
+  const [uploadDescricao, setUploadDescricao] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Queries
   const { data: veiculos, isLoading } = useQuery({
@@ -107,6 +125,16 @@ export default function Veiculos() {
   const { data: marcas } = useQuery({
     queryKey: ['veiculos', 'marcas'],
     queryFn: () => veiculoService.marcas(),
+  })
+
+  const { data: categorias } = useQuery({
+    queryKey: ['veiculos', 'categorias'],
+    queryFn: () => veiculoService.categorias(),
+  })
+
+  const { data: combustiveisList = [] } = useQuery({
+    queryKey: ['veiculos', 'combustiveis'],
+    queryFn: () => veiculoService.combustiveis(),
   })
 
   const [form, setForm] = useState<Partial<Veiculo>>({
@@ -184,6 +212,39 @@ export default function Veiculos() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['veiculos'] }),
   })
 
+  // ── Documentos ─────────────────────────────────────────────────────────────
+
+  const { data: documentos = [], isLoading: loadingDocs } = useQuery<VeiculoDocumento[]>({
+    queryKey: ['veiculo-documentos', editing?.id],
+    queryFn: () => veiculoService.listarDocumentos(editing!.id),
+    enabled: !!editing?.id,
+  })
+
+  const uploadDocMutation = useMutation({
+    mutationFn: ({ tipo, descricao, file }: { tipo: string; descricao: string; file: File }) =>
+      veiculoService.uploadDocumento(editing!.id, tipo, descricao, file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['veiculo-documentos', editing?.id] })
+      setUploadFile(null)
+      setUploadTipo('')
+      setUploadDescricao('')
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    },
+    onError: (err: Error) => setFormError(err.message),
+  })
+
+  const deleteDocMutation = useMutation({
+    mutationFn: (docId: number) => veiculoService.deletarDocumento(editing!.id, docId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['veiculo-documentos', editing?.id] }),
+  })
+
+  // Documentos do modal de detalhe (para o carrossel de fotos)
+  const { data: detalheDocumentos = [] } = useQuery<VeiculoDocumento[]>({
+    queryKey: ['veiculo-documentos', detailVeiculo?.id],
+    queryFn: () => veiculoService.listarDocumentos(detailVeiculo!.id),
+    enabled: !!detailVeiculo?.id,
+  })
+
   function openCreate() {
     setEditing(null)
     setForm({
@@ -216,6 +277,9 @@ export default function Veiculos() {
     setMarcaId(null)
     setUnidadeId(null)
     setActiveTab('gerais')
+    setUploadFile(null)
+    setUploadTipo('')
+    setUploadDescricao('')
     setShowForm(true)
   }
 
@@ -226,6 +290,9 @@ export default function Veiculos() {
     setMarcaId(full.marca?.id || null)
     setUnidadeId(full.unidade_id ?? null)
     setActiveTab('gerais')
+    setUploadFile(null)
+    setUploadTipo('')
+    setUploadDescricao('')
     setShowForm(true)
   }
 
@@ -261,6 +328,10 @@ export default function Veiculos() {
       setFormError('Tipo de Registro é obrigatório')
       return
     }
+    if (!form.categoria_id) {
+      setFormError('Categoria é obrigatória')
+      return
+    }
 
     try {
       // Preparar dados para envio
@@ -292,6 +363,7 @@ export default function Veiculos() {
     setLoadingDetail(true)
     setDetailVeiculo(null)
     setActiveTab('gerais')
+    setCarouselIdx(0)
     setShowDetail(true)
     try {
       const full = await veiculoService.detalhe(v.id)
@@ -420,7 +492,7 @@ export default function Veiculos() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden">
             {/* Header */}
             <div className="border-b px-6 py-4 flex justify-between items-center shrink-0">
-              <h2 className="text-xl font-bold">{editing ? '✏️ Editar Veículo' : '➕ Novo Veículo'}</h2>
+              <h2 className="text-lg font-semibold text-gray-800">{editing ? '✏️ Editar Veículo' : '➕ Novo Veículo'}</h2>
               <button
                 onClick={() => setShowForm(false)}
                 className="text-gray-500 hover:text-gray-700 text-2xl"
@@ -465,11 +537,11 @@ export default function Veiculos() {
               {/* 📋 Dados Gerais */}
               {activeTab === 'gerais' && (
                 <div className="bg-white rounded-lg p-6 space-y-4">
-                  <h3 className="font-bold text-lg mb-4">Informações do Veículo</h3>
+                  <h3 className="text-base font-semibold text-gray-800 mb-4">Informações do Veículo</h3>
                   <div className="grid grid-cols-2 gap-4">
                     {/* Tipo de Registro e Status lado a lado */}
                     <div>
-                      <label className="block text-sm font-medium mb-2">Tipo de Registro *</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-2">Tipo de Registro *</label>
                       <div className="flex gap-4">
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
@@ -498,7 +570,7 @@ export default function Veiculos() {
 
                     {/* Situação */}
                     <div>
-                      <label className="block text-sm font-medium mb-1">Situação</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Situação</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.situacao || 'ATIVA'}
@@ -512,7 +584,7 @@ export default function Veiculos() {
 
                     {/* Placa e Tipo de Veículo */}
                     <div>
-                      <label className="block text-sm font-medium mb-1">Placa *</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Placa *</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -522,7 +594,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Prefixo</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Prefixo</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -532,7 +604,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Tipo de Veículo</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Tipo de Veículo</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.tipo_veiculo_nome || 'AUTOMOVEL'}
@@ -558,10 +630,23 @@ export default function Veiculos() {
                         <option value="VAN">Van</option>
                       </select>
                     </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Categoria *</label>
+                      <select
+                        className="w-full px-3 py-2 border rounded-lg"
+                        value={form.categoria_id || ''}
+                        onChange={(e) => setForm({ ...form, categoria_id: parseInt(e.target.value) || undefined })}
+                      >
+                        <option value="">Selecione...</option>
+                        {categorias?.map((c) => (
+                          <option key={c.id} value={c.id}>{c.nome}</option>
+                        ))}
+                      </select>
+                    </div>
 
                     {/* Marca e Modelo */}
                     <div>
-                      <label className="block text-sm font-medium mb-1">Marca *</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Marca *</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={marcaId || ''}
@@ -578,7 +663,7 @@ export default function Veiculos() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Modelo *</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Modelo *</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.modelo_id || ''}
@@ -594,7 +679,7 @@ export default function Veiculos() {
 
                     {/* Ano Fabricação e Ano Modelo */}
                     <div>
-                      <label className="block text-sm font-medium mb-1">Ano Fabricação *</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Ano Fabricação *</label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -603,7 +688,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Ano Modelo</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Ano Modelo</label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -614,7 +699,7 @@ export default function Veiculos() {
 
                     {/* Cor e Combustível */}
                     <div>
-                      <label className="block text-sm font-medium mb-1">Cor</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Cor</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -624,23 +709,31 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Combustível</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Combustível</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.combustivel || ''}
                         onChange={(e) => setForm({ ...form, combustivel: e.target.value as any })}
                       >
-                        <option value="FLEX">FLEX</option>
-                        <option value="GASOLINA">Gasolina</option>
-                        <option value="DIESEL">Diesel</option>
-                        <option value="ELETRICO">Elétrico</option>
-                        <option value="GNV">GNV</option>
+                        <option value="">Selecione...</option>
+                        {combustiveisList.length > 0
+                          ? combustiveisList.map((c) => (
+                              <option key={c.id} value={c.nome}>{c.nome}</option>
+                            ))
+                          : (<>
+                              <option value="FLEX">FLEX</option>
+                              <option value="GASOLINA">GASOLINA</option>
+                              <option value="DIESEL">DIESEL</option>
+                              <option value="ELETRICO">ELETRICO</option>
+                              <option value="GNV">GNV</option>
+                            </>)
+                        }
                       </select>
                     </div>
 
                     {/* RENAVAM e Chassi */}
                     <div>
-                      <label className="block text-sm font-medium mb-1">RENAVAM *</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">RENAVAM *</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -651,7 +744,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Chassi *</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Chassi *</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -664,7 +757,7 @@ export default function Veiculos() {
 
                     {/* Observações - full width */}
                     <div className="col-span-2">
-                      <label className="block text-sm font-medium mb-1">Observações</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Observações</label>
                       <textarea
                         className="w-full px-3 py-2 border rounded-lg"
                         rows={2}
@@ -680,10 +773,10 @@ export default function Veiculos() {
               {/* 🚗 Frota */}
               {activeTab === 'classificacao' && (
                 <div className="bg-white rounded-lg p-6 space-y-4">
-                  <h3 className="font-bold text-lg mb-4">Dados da Frota</h3>
+                  <h3 className="text-base font-semibold text-gray-800 mb-4">Dados da Frota</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="col-span-2">
-                      <label className="block text-sm font-medium mb-1">Tipo de Frota *</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Tipo de Frota *</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg font-semibold"
                         value={form.tipo_frota_id || ''}
@@ -700,7 +793,7 @@ export default function Veiculos() {
                     {form.tipo_frota_id && ['1', '4'].includes(String(form.tipo_frota_id)) && (
                       <>
                         <div>
-                          <label className="block text-sm font-medium mb-1">Número Patrimônio</label>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Número Patrimônio</label>
                           <input
                             type="text"
                             className="w-full px-3 py-2 border rounded-lg"
@@ -710,7 +803,7 @@ export default function Veiculos() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-1">Valor de Aquisição (R$)</label>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Valor de Aquisição (R$)</label>
                           <input
                             type="number"
                             step="0.01"
@@ -721,7 +814,7 @@ export default function Veiculos() {
                           />
                         </div>
                         <div className="col-span-2">
-                          <label className="block text-sm font-medium mb-1">Tipo de Aquisição</label>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Tipo de Aquisição</label>
                           <select
                             className="w-full px-3 py-2 border rounded-lg"
                             value={form.tipo_aquisicao || ''}
@@ -738,7 +831,7 @@ export default function Veiculos() {
                     {/* Campos para Convênio (PM, Bombeiros) */}
                     {form.tipo_frota_id && String(form.tipo_frota_id) === '3' && (
                       <div className="col-span-2">
-                        <label className="block text-sm font-medium mb-1">Tipo de Convênio</label>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Tipo de Convênio</label>
                         <select
                           className="w-full px-3 py-2 border rounded-lg"
                           value={form.tipo_convenio || ''}
@@ -755,7 +848,7 @@ export default function Veiculos() {
                     {form.tipo_frota_id && String(form.tipo_frota_id) === '2' && (
                       <>
                         <div className="col-span-2">
-                          <label className="block text-sm font-medium mb-1">Nome da Locadora</label>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Nome da Locadora</label>
                           <input
                             type="text"
                             className="w-full px-3 py-2 border rounded-lg"
@@ -765,7 +858,7 @@ export default function Veiculos() {
                           />
                         </div>
                         <div className="col-span-2">
-                          <label className="block text-sm font-medium mb-1">Valor Locação (R$/mês)</label>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Valor Locação (R$/mês)</label>
                           <input
                             type="number"
                             step="0.01"
@@ -780,10 +873,10 @@ export default function Veiculos() {
 
                     {/* Lotação / Administrativo */}
                     <div className="col-span-2 border-t pt-4 mt-2">
-                      <h4 className="font-semibold text-sm mb-3">Lotação</h4>
+                      <h4 className="text-sm font-semibold text-gray-700 mb-3">Lotação</h4>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Unidade</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Unidade</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.unidade_id || ''}
@@ -800,7 +893,7 @@ export default function Veiculos() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Subunidade</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Subunidade</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.subunidade_id || ''}
@@ -814,7 +907,7 @@ export default function Veiculos() {
                       </select>
                     </div>
                     <div className="col-span-2">
-                      <label className="block text-sm font-medium mb-1">Centro de Custo</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Centro de Custo</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.centro_custo_id || ''}
@@ -833,10 +926,10 @@ export default function Veiculos() {
               {/* 🔧 Dados Técnicos */}
               {activeTab === 'tecnico' && (
                 <div className="bg-white rounded-lg p-6 space-y-4">
-                  <h3 className="font-bold text-lg mb-4">Dados Técnicos</h3>
+                  <h3 className="text-base font-semibold text-gray-800 mb-4">Dados Técnicos</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium mb-1">Motorização</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Motorização</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -846,7 +939,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Cilindrada (cc)</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Cilindrada (cc)</label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -856,7 +949,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Potência (cv)</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Potência (cv)</label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -866,7 +959,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Transmissão</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Transmissão</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.transmissao || ''}
@@ -879,7 +972,7 @@ export default function Veiculos() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Tração</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Tração</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.tracao || ''}
@@ -893,7 +986,7 @@ export default function Veiculos() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Direção</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Direção</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.direcao || ''}
@@ -928,10 +1021,10 @@ export default function Veiculos() {
                       </div>
                     </div>
                     <div className="col-span-2 border-t pt-4">
-                      <h4 className="font-semibold text-sm mb-3">Dados do Pneu</h4>
+                      <h4 className="text-sm font-semibold text-gray-700 mb-3">Dados do Pneu</h4>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Dimensões (Ex: 195/65R15)</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Dimensões (Ex: 195/65R15)</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -941,7 +1034,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Índice de Velocidade</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Índice de Velocidade</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -951,7 +1044,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Índice de Carga</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Índice de Carga</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -967,10 +1060,10 @@ export default function Veiculos() {
               {/* ⚙️ Operacional */}
               {activeTab === 'operacional' && (
                 <div className="bg-white rounded-lg p-6 space-y-4">
-                  <h3 className="font-bold text-lg mb-4">Dados Operacionais</h3>
+                  <h3 className="text-base font-semibold text-gray-800 mb-4">Dados Operacionais</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium mb-1">Tipo Controle</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Tipo Controle</label>
                       <select
                         className="w-full px-3 py-2 border rounded-lg"
                         value={form.tipo_controle || ''}
@@ -981,7 +1074,7 @@ export default function Veiculos() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Leitura Inicial</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Leitura Inicial</label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -990,7 +1083,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Capacidade Tanque (L)</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Capacidade Tanque (L)</label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -999,7 +1092,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Capacidade Passageiros</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Capacidade Passageiros</label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -1008,7 +1101,7 @@ export default function Veiculos() {
                       />
                     </div>
                     <div className="col-span-2">
-                      <label className="block text-sm font-medium mb-1">Capacidade Carga (kg)</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Capacidade Carga (kg)</label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border rounded-lg"
@@ -1025,10 +1118,10 @@ export default function Veiculos() {
               {activeTab === 'documentacao' && (
                 <div className="bg-white rounded-lg p-6 space-y-6">
                   <div>
-                    <h3 className="font-bold text-lg mb-4">Documentação</h3>
+                    <h3 className="text-base font-semibold text-gray-800 mb-4">Documentação</h3>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium mb-1">Vencimento Licenciamento</label>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Vencimento Licenciamento</label>
                         <input
                           type="date"
                           className="w-full px-3 py-2 border rounded-lg"
@@ -1037,7 +1130,7 @@ export default function Veiculos() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-1">Vencimento Seguro</label>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Vencimento Seguro</label>
                         <input
                           type="date"
                           className="w-full px-3 py-2 border rounded-lg"
@@ -1046,7 +1139,7 @@ export default function Veiculos() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-1">Vencimento IPVA</label>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Vencimento IPVA</label>
                         <input
                           type="date"
                           className="w-full px-3 py-2 border rounded-lg"
@@ -1059,43 +1152,118 @@ export default function Veiculos() {
 
                   {/* Seção de Arquivos */}
                   <div className="border-t pt-6">
-                    <h4 className="font-bold text-base mb-4">Arquivos Anexados</h4>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Tipo de Documento</label>
-                          <select className="w-full px-3 py-2 border rounded-lg text-sm">
-                            <option value="">Selecione...</option>
-                            <option value="FOTO_VEICULO">Foto do Veículo</option>
-                            <option value="CRLV">CRLV</option>
-                            <option value="NF_COMPRA">NF de Compra</option>
-                            <option value="APOL_SEGURO">Apólice de Seguro</option>
-                            <option value="MANUTENCAO">Registro de Manutenção</option>
-                            <option value="INSPECAO">Inspecção Técnica</option>
-                            <option value="OUTRO">Outro</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Arquivo</label>
-                          <input
-                            type="file"
-                            className="w-full px-3 py-2 border rounded-lg text-sm"
-                            accept="image/*,.pdf"
-                          />
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
-                      >
-                        ➕ Adicionar Arquivo
-                      </button>
+                    <h4 className="text-sm font-semibold text-gray-800 mb-4">Arquivos Anexados</h4>
 
-                      {/* Lista de Arquivos (vazia por enquanto) */}
-                      <div className="mt-4">
-                        <p className="text-sm text-gray-500 italic">Nenhum arquivo anexado ainda.</p>
+                    {!editing ? (
+                      <p className="text-sm text-gray-500 italic">
+                        💾 Salve o veículo primeiro para poder anexar documentos.
+                      </p>
+                    ) : (
+                      <div className="space-y-4">
+                        {/* Formulário de upload */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Tipo de Documento *</label>
+                            <select
+                              className="w-full px-3 py-2 border rounded-lg text-sm"
+                              value={uploadTipo}
+                              onChange={(e) => setUploadTipo(e.target.value)}
+                            >
+                              <option value="">Selecione...</option>
+                              <option value="FOTO">📷 Foto do Veículo</option>
+                              <option value="CRLV">📄 CRLV</option>
+                              <option value="NF_COMPRA">🧾 NF de Compra</option>
+                              <option value="APOLICE_SEGURO">🛡️ Apólice de Seguro</option>
+                              <option value="MANUTENCAO">🔧 Registro de Manutenção</option>
+                              <option value="INSPECAO">🔍 Inspeção Técnica</option>
+                              <option value="OUTRO">📎 Outro</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Descrição (opcional)</label>
+                            <input
+                              type="text"
+                              className="w-full px-3 py-2 border rounded-lg text-sm"
+                              placeholder="Ex: CRLV 2025, Foto lateral..."
+                              value={uploadDescricao}
+                              onChange={(e) => setUploadDescricao(e.target.value)}
+                            />
+                          </div>
+                          <div className="col-span-2">
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Arquivo (imagem ou PDF, máx. 10 MB) *</label>
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              className="w-full px-3 py-2 border rounded-lg text-sm"
+                              accept="image/*,.pdf"
+                              onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                            />
+                          </div>
+                        </div>
+
+                        {!uploadFile && (
+                          <p className="text-xs text-gray-400">Selecione um arquivo para habilitar o envio.</p>
+                        )}
+                        {uploadFile && !uploadTipo && (
+                          <p className="text-xs text-amber-600 font-medium">⚠️ Selecione o Tipo de Documento antes de enviar.</p>
+                        )}
+
+                        <button
+                          type="button"
+                          disabled={!uploadFile || uploadDocMutation.isPending}
+                          onClick={() => {
+                            if (!uploadTipo) return
+                            uploadDocMutation.mutate({ tipo: uploadTipo, descricao: uploadDescricao, file: uploadFile! })
+                          }}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {uploadDocMutation.isPending ? 'Enviando...' : '➕ Adicionar Arquivo'}
+                        </button>
+
+                        {/* Lista de arquivos */}
+                        <div className="mt-2 space-y-2">
+                          {loadingDocs ? (
+                            <p className="text-sm text-gray-400">Carregando arquivos...</p>
+                          ) : documentos.length === 0 ? (
+                            <p className="text-sm text-gray-500 italic">Nenhum arquivo anexado ainda.</p>
+                          ) : (
+                            documentos.map((doc) => (
+                              <div key={doc.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <span className="text-lg shrink-0">{TIPO_DOC_ICONE[doc.tipo] ?? '📎'}</span>
+                                  <div className="min-w-0">
+                                    <p className="text-sm font-medium text-gray-800 truncate">
+                                      {doc.descricao || TIPO_DOC_LABEL[doc.tipo] || doc.tipo}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      {TIPO_DOC_LABEL[doc.tipo] || doc.tipo} · {new Date(doc.criado_em).toLocaleDateString('pt-BR')}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-3 shrink-0">
+                                  <a
+                                    href={`/media/${doc.arquivo}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-sm text-blue-600 hover:underline"
+                                  >
+                                    Abrir
+                                  </a>
+                                  <button
+                                    type="button"
+                                    onClick={() => deleteDocMutation.mutate(doc.id)}
+                                    disabled={deleteDocMutation.isPending}
+                                    className="text-sm text-red-500 hover:text-red-700 disabled:opacity-50"
+                                  >
+                                    Remover
+                                  </button>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -1180,13 +1348,49 @@ export default function Veiculos() {
                     <div className="grid grid-cols-3 gap-4">
                       {/* Foto (col-span-1) */}
                       <div className="col-span-1 flex flex-col gap-4">
-                        {/* Placeholder de foto */}
-                        <div className="bg-white rounded-xl border-2 border-gray-200 h-40 flex items-center justify-center">
-                          <div className="text-center">
-                            <div className="text-4xl mb-2">🚗</div>
-                            <p className="text-xs text-gray-400">Foto</p>
-                          </div>
-                        </div>
+                        {/* Carrossel de Fotos */}
+                        {(() => {
+                          const fotos = detalheDocumentos.filter(d => d.tipo === 'FOTO')
+                          const foto = fotos[carouselIdx]
+                          return (
+                            <div className="relative bg-white rounded-xl border-2 border-gray-200 h-40 overflow-hidden select-none">
+                              {foto ? (
+                                <>
+                                  <img
+                                    src={`/media/${foto.arquivo}`}
+                                    alt={foto.descricao || 'Foto do veículo'}
+                                    className="w-full h-full object-cover"
+                                  />
+                                  {foto.descricao && (
+                                    <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs px-2 py-1 text-center truncate">
+                                      {foto.descricao}
+                                    </div>
+                                  )}
+                                  {fotos.length > 1 && (
+                                    <>
+                                      <button
+                                        onClick={() => setCarouselIdx(i => (i - 1 + fotos.length) % fotos.length)}
+                                        className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white rounded-full w-7 h-7 flex items-center justify-center text-base leading-none"
+                                      >‹</button>
+                                      <button
+                                        onClick={() => setCarouselIdx(i => (i + 1) % fotos.length)}
+                                        className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white rounded-full w-7 h-7 flex items-center justify-center text-base leading-none"
+                                      >›</button>
+                                      <div className="absolute top-1.5 right-1.5 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded-full">
+                                        {carouselIdx + 1}/{fotos.length}
+                                      </div>
+                                    </>
+                                  )}
+                                </>
+                              ) : (
+                                <div className="flex flex-col items-center justify-center h-full">
+                                  <div className="text-4xl mb-2">🚗</div>
+                                  <p className="text-xs text-gray-400">Sem fotos</p>
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })()}
 
                         {/* Quick Stats abaixo */}
                         <div className="grid grid-cols-2 gap-2">
@@ -1197,8 +1401,8 @@ export default function Veiculos() {
                             { label: 'CATEGORIA', value: detailVeiculo.categoria?.nome?.slice(0, 12) || '—' },
                           ].map(({ label, value }) => (
                             <div key={label} className="bg-white rounded-lg p-3 border border-gray-100">
-                              <p className="text-gray-500 text-xs font-bold tracking-wide">{label}</p>
-                              <p className="text-gray-900 font-bold text-sm mt-1 truncate">{value}</p>
+                              <p className="text-sm font-semibold text-gray-500 tracking-wide">{label}</p>
+                              <p className="text-sm font-normal text-gray-900 mt-1 truncate">{value}</p>
                             </div>
                           ))}
                         </div>
@@ -1217,7 +1421,7 @@ export default function Veiculos() {
                             <button
                               key={tab.id}
                               onClick={() => setActiveTab(tab.id)}
-                              className={`px-4 py-2 text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
+                              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                                 activeTab === tab.id
                                   ? 'border-blue-600 text-blue-600'
                                   : 'border-transparent text-gray-600 hover:text-gray-900'
@@ -1304,7 +1508,7 @@ export default function Veiculos() {
                     {/* Observações (full width) */}
                     {detailVeiculo.observacoes && (
                       <div className="bg-white rounded-lg p-4 border border-gray-100">
-                        <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Observações</h4>
+                        <h4 className="text-sm font-medium text-gray-600 uppercase tracking-wide mb-2">Observações</h4>
                         <p className="text-sm text-gray-600 leading-relaxed">{detailVeiculo.observacoes}</p>
                       </div>
                     )}
@@ -1317,8 +1521,8 @@ export default function Veiculos() {
                         { label: 'SEGURO', value: fmtDate(detailVeiculo.vencimento_seguro) },
                       ].map(({ label, value }) => (
                         <div key={label} className="bg-white rounded-lg p-4 border border-gray-100">
-                          <p className="text-gray-500 text-xs font-bold tracking-wide">{label}</p>
-                          <p className="text-gray-900 font-bold text-sm mt-1">{value || '—'}</p>
+                          <p className="text-sm font-semibold text-gray-500 tracking-wide">{label}</p>
+                          <p className="text-sm font-normal text-gray-900 mt-1">{value || '—'}</p>
                         </div>
                       ))}
                     </div>

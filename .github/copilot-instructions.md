@@ -287,3 +287,27 @@ Toda implementação deve entregar:
 - Código profissional
 
 A simplicidade deve sempre vencer a complexidade.
+
+# Permissões Git:
+
+Você pode executar:
+
+- git status
+- git log
+- git diff
+- git branch
+- git remote -v
+- git show
+- git fetch
+
+Antes de executar qualquer comando que altere arquivos, histórico ou remoto,
+solicite minha confirmação.
+
+Nunca execute:
+
+- git reset --hard
+- git clean
+- git checkout .
+-git restore .
+- git rebase
+- git push --force
