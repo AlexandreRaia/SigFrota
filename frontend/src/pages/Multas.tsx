@@ -16,7 +16,7 @@ export default function Multas() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Multas</h1>
+        <h1 className="text-xl font-bold text-slate-800">Multas</h1>
         <Button>+ Registrar Multa</Button>
       </div>
 
@@ -41,12 +41,12 @@ export default function Multas() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Placa</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Data Infração</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Valor</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Pontos</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Vencimento</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Status</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Placa</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Data Infração</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Valor</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Pontos</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Vencimento</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 bg-white">
@@ -57,15 +57,15 @@ export default function Multas() {
             ) : (
               multas?.map((m) => (
                 <tr key={m.id} className="hover:bg-gray-50 cursor-pointer">
-                  <td className="px-4 py-3 font-mono font-medium text-gray-900">{m.placa}</td>
-                  <td className="px-4 py-3 text-gray-600">
+                  <td className="px-4 py-3 font-mono text-sm font-medium text-slate-800">{m.placa}</td>
+                  <td className="px-4 py-3 text-sm text-slate-600">
                     {new Date(m.data_infracao).toLocaleDateString('pt-BR')}
                   </td>
-                  <td className="px-4 py-3 text-gray-900">
+                  <td className="px-4 py-3 text-sm font-medium text-slate-800">
                     {Number(m.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{m.pontos}</td>
-                  <td className="px-4 py-3 text-gray-600">
+                  <td className="px-4 py-3 text-sm text-slate-600">{m.pontos}</td>
+                  <td className="px-4 py-3 text-sm text-slate-600">
                     {new Date(m.data_vencimento).toLocaleDateString('pt-BR')}
                   </td>
                   <td className="px-4 py-3"><StatusMultaBadge status={m.status} /></td>

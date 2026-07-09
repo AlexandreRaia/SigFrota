@@ -16,7 +16,7 @@ export default function Condutores() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Condutores</h1>
+        <h1 className="text-xl font-bold text-slate-800">Condutores</h1>
         <Button>+ Novo Condutor</Button>
       </div>
 
@@ -40,12 +40,12 @@ export default function Condutores() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Prontuário</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Nome</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">CPF</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Cargo</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">CNH</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Status</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Prontuário</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Nome</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">CPF</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Cargo</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">CNH</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 bg-white">
@@ -56,11 +56,11 @@ export default function Condutores() {
             ) : (
               condutores?.map((c) => (
                 <tr key={c.id} className="hover:bg-gray-50 cursor-pointer">
-                  <td className="px-4 py-3 font-mono text-gray-900">{c.prontuario}</td>
-                  <td className="px-4 py-3 font-medium text-gray-900">{c.nome}</td>
-                  <td className="px-4 py-3 font-mono text-gray-600">{c.cpf}</td>
-                  <td className="px-4 py-3 text-gray-600">{c.cargo}</td>
-                  <td className="px-4 py-3 text-gray-600">{c.cnh_categoria}</td>
+                  <td className="px-4 py-3 font-mono text-sm font-medium text-slate-800">{c.prontuario}</td>
+                  <td className="px-4 py-3 text-sm font-medium text-slate-800">{c.nome}</td>
+                  <td className="px-4 py-3 font-mono text-sm text-slate-600">{c.cpf}</td>
+                  <td className="px-4 py-3 text-sm text-slate-600">{c.cargo}</td>
+                  <td className="px-4 py-3 text-sm text-slate-600">{c.cnh_categoria}</td>
                   <td className="px-4 py-3">
                     <Badge variant={c.status === 'ATIVO' ? 'success' : c.status === 'SUSPENSO' ? 'warning' : 'danger'}>
                       {c.status}

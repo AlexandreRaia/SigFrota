@@ -23,7 +23,7 @@ export default function Manutencao() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Manutenção (SMV)</h1>
+        <h1 className="text-xl font-bold text-slate-800">Manutenção (SMV)</h1>
         <Button>+ Nova SMV</Button>
       </div>
 
@@ -53,12 +53,12 @@ export default function Manutencao() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Número</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Veículo</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Etapa</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Urgência</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Solicitação</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Msgs</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Número</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Veículo</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Etapa</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Urgência</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Solicitação</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Msgs</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 bg-white">
@@ -70,10 +70,10 @@ export default function Manutencao() {
               smvs?.map((s) => (
                 <tr key={s.id} className="hover:bg-gray-50 cursor-pointer">
                   <td className="px-4 py-3 font-mono font-bold text-primary-600">{s.numero}</td>
-                  <td className="px-4 py-3 text-gray-600">#{s.veiculo_id}</td>
+                  <td className="px-4 py-3 text-sm text-slate-600">#{s.veiculo_id}</td>
                   <td className="px-4 py-3"><EtapaSMVBadge etapa={s.etapa} /></td>
                   <td className={`px-4 py-3 ${URGENCIA_CORES[s.urgencia]}`}>{s.urgencia}</td>
-                  <td className="px-4 py-3 text-gray-600 text-sm">
+                  <td className="px-4 py-3 text-sm text-slate-600">
                     {new Date(s.dt_solicitacao).toLocaleDateString('pt-BR')}
                   </td>
                   <td className="px-4 py-3">

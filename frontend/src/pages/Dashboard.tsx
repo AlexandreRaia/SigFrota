@@ -7,8 +7,8 @@ function KpiCard({ label, value, icon, color }: { label: string; value: number |
     <div className={`card p-6 border-l-4 ${color}`}>
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-500">{label}</p>
-          <p className="mt-1 text-3xl font-bold text-gray-900">{value}</p>
+          <p className="text-sm font-medium text-slate-500">{label}</p>
+          <p className="mt-1 text-2xl font-bold text-slate-800">{value}</p>
         </div>
         <span className="text-3xl">{icon}</span>
       </div>
@@ -33,7 +33,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+      <h1 className="text-xl font-bold text-slate-800">Dashboard</h1>
 
       {/* KPIs */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -46,7 +46,7 @@ export default function Dashboard() {
       {/* SMV por etapa */}
       {dashSMV?.por_etapa && (
         <div className="card p-6">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">Manutenções por Etapa</h2>
+          <h2 className="mb-4 text-base font-semibold text-slate-800">Manutenções por Etapa</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-9">
             {Object.entries(dashSMV.por_etapa).map(([etapa, count]) => (
               <div key={etapa} className="rounded-lg bg-gray-50 p-3 text-center">

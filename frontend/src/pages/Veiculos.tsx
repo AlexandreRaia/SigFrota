@@ -377,7 +377,7 @@ export default function Veiculos() {
     <div className="space-y-4 p-6">
       {/* Cabeçalho */}
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">🚗 Veículos</h1>
+        <h1 className="text-xl font-bold text-slate-800">🚗 Veículos</h1>
         <Button onClick={openCreate} className="bg-blue-600 hover:bg-blue-700">
           + Novo Veículo
         </Button>
@@ -409,13 +409,13 @@ export default function Veiculos() {
         <table className="w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Placa</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Marca / Modelo</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Ano</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Combustível</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Unidade</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Situação</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Ações</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Placa</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Marca / Modelo</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Ano</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Combustível</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Unidade</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Situação</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -430,11 +430,11 @@ export default function Veiculos() {
             ) : (
               veiculos?.map((v) => (
                 <tr key={v.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-3 font-mono font-bold text-gray-900">{v.placa}</td>
-                  <td className="px-6 py-3 text-gray-600">{v.marca?.nome} {v.modelo?.nome}</td>
-                  <td className="px-6 py-3 text-gray-600">{v.ano_fabricacao}</td>
-                  <td className="px-6 py-3 text-gray-600">{v.combustivel}</td>
-                  <td className="px-6 py-3 text-gray-600">{v.unidade?.nome ?? <span className="text-gray-300">—</span>}</td>
+                  <td className="px-6 py-3 font-mono text-sm font-medium text-slate-800">{v.placa}</td>
+                  <td className="px-6 py-3 text-sm text-slate-600">{v.marca?.nome} {v.modelo?.nome}</td>
+                  <td className="px-6 py-3 text-sm text-slate-600">{v.ano_fabricacao}</td>
+                  <td className="px-6 py-3 text-sm text-slate-600">{v.combustivel}</td>
+                  <td className="px-6 py-3 text-sm text-slate-600">{v.unidade?.nome ?? <span className="text-gray-300">—</span>}</td>
                   <td className="px-6 py-3">
                     {(() => {
                       const b = situacaoBadge(v.situacao)

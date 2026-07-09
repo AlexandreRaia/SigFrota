@@ -152,7 +152,7 @@ export default function Parametrizacoes() {
     <div className="space-y-4 p-6">
       {/* Cabeçalho */}
       <div>
-        <h1 className="text-3xl font-bold">🏢 Parametrizações</h1>
+        <h1 className="text-xl font-bold text-slate-800">🏢 Parametrizações</h1>
         <p className="mt-1 text-sm text-gray-500">
           Cadastros de apoio do sistema. A <strong>Unidade</strong> representa uma Secretaria (ex: Secretaria de Administração / SMA)
           e o <strong>Setor/Departamento</strong> pertence a uma Unidade (ex: Departamento de Transportes).
@@ -737,7 +737,7 @@ function ModalShell({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-          <h2 className="text-lg font-semibold text-slate-800">{title}</h2>
+          <h2 className="text-base font-semibold text-slate-800">{title}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600" aria-label="Fechar">✕</button>
         </div>
         <div className="p-6">{children}</div>
