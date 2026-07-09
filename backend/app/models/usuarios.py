@@ -14,7 +14,6 @@ class Secretaria(Base, TimestampMixin):
     ativa: Mapped[bool] = mapped_column(Boolean, default=True)
 
     usuarios: Mapped[list["Usuario"]] = relationship(back_populates="secretaria")
-    condutores: Mapped[list["Condutor"]] = relationship(back_populates="secretaria")
     unidades: Mapped[list["Unidade"]] = relationship(back_populates="secretaria", cascade="all, delete-orphan")
     veiculos: Mapped[list["Veiculo"]] = relationship(back_populates="secretaria")
 

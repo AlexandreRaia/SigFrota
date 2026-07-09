@@ -152,7 +152,7 @@ export default function Parametrizacoes() {
     <div className="space-y-4 p-6">
       {/* Cabeçalho */}
       <div>
-        <h1 className="text-xl font-bold text-slate-800">🏢 Parametrizações</h1>
+        <h1 className="text-xl font-bold text-slate-800">Parametrizações</h1>
       </div>
 
       {/* Abas */}

@@ -377,7 +377,7 @@ export default function Veiculos() {
     <div className="space-y-4 p-6">
       {/* Cabeçalho */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-slate-800">🚗 Veículos</h1>
+        <h1 className="text-xl font-bold text-slate-800">Veículos</h1>
         <Button onClick={openCreate} className="bg-blue-600 hover:bg-blue-700">
           + Novo Veículo
         </Button>

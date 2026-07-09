@@ -1,10 +1,12 @@
 from datetime import date
 
-from sqlalchemy import Boolean, Date, ForeignKey, Integer, String
+from sqlalchemy import Date, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
 from app.models.base import TimestampMixin
+
+# Unidade e Subunidade são resolvidos via string pelo registry do SQLAlchemy
 
 
 class Condutor(Base, TimestampMixin):
@@ -34,8 +36,8 @@ class Condutor(Base, TimestampMixin):
     email: Mapped[str] = mapped_column(String(254), default="")
 
     # ── Lotação
-    secretaria_id: Mapped[int] = mapped_column(ForeignKey("secretarias.id"))
-    unidade: Mapped[str] = mapped_column(String(100), default="")
+    unidade_id: Mapped[int | None] = mapped_column(ForeignKey("unidades.id"), nullable=True)
+    subunidade_id: Mapped[int | None] = mapped_column(ForeignKey("subunidades.id"), nullable=True)
 
     # ── CNH
     cnh_categoria: Mapped[str] = mapped_column(String(3), default="")
@@ -46,7 +48,31 @@ class Condutor(Base, TimestampMixin):
     cnh_arquivo: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
     # ── Relacionamentos
-    secretaria: Mapped["Secretaria"] = relationship(back_populates="condutores")  # type: ignore[name-defined]
+    unidade: Mapped["Unidade | None"] = relationship("Unidade", foreign_keys=[unidade_id], lazy="noload")  # type: ignore[name-defined]
+    subunidade: Mapped["Subunidade | None"] = relationship("Subunidade", foreign_keys=[subunidade_id], lazy="noload")  # type: ignore[name-defined]
+    documentos: Mapped[list["CondutorDocumento"]] = relationship(back_populates="condutor", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"<Condutor {self.nome} ({self.cpf})>"
+
+
+class CondutorDocumento(Base, TimestampMixin):
+    """Documentos e fotos anexados a um condutor (CNH, foto, etc)."""
+    __tablename__ = "condutor_documentos"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    condutor_id: Mapped[int] = mapped_column(ForeignKey("condutores.id"), index=True)
+
+    # FOTO, CNH, OUTRO
+    tipo: Mapped[str] = mapped_column(String(30))
+
+    # Caminho relativo a MEDIA_DIR
+    arquivo: Mapped[str] = mapped_column(String(255))
+
+    # Descrição opcional
+    descricao: Mapped[str] = mapped_column(String(200), default="")
+
+    condutor: Mapped["Condutor"] = relationship(back_populates="documentos")
+
+    def __repr__(self) -> str:
+        return f"<CondutorDocumento {self.tipo} - {self.arquivo}>"

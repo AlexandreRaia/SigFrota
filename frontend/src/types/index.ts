@@ -209,27 +209,38 @@ export interface CondutorListItem {
   id: number
   prontuario: string
   nome: string
-  cpf: string
-  cargo: string
-  secretaria_id: number
   status: StatusCondutor
-  cnh_categoria: string
-  cnh_vencimento: string | null
+  unidade_id: number | null
+  subunidade_id: number | null
+  unidade: Unidade | null
+  subunidade: Subunidade | null
 }
 
 export interface Condutor extends CondutorListItem {
+  cpf: string
   data_nascimento: string
   rg: string
   orgao_emissor: string
+  cargo: string
   endereco: string
   telefone: string
   email: string
-  unidade: string
   cnh_numero: string
+  cnh_categoria: string
   cnh_emissao: string | null
+  cnh_vencimento: string | null
   cnh_orgao: string
   foto: string | null
   cnh_arquivo: string | null
+}
+
+export interface CondutorDocumento {
+  id: number
+  condutor_id: number
+  tipo: string
+  descricao: string
+  arquivo: string
+  criado_em: string
 }
 
 // ── Manutenção (SMV) ──────────────────────────────────────────────────────────
