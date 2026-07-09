@@ -3,6 +3,13 @@
 
 # Banco SQLite3 de desenvolvimento
 db.sqlite3
+*.db
+*.db.bak
+*.sqlite
+*.sqlite3
+
+# Dependências Node
+node_modules/
 
 # Bytecode Python
 __pycache__/
